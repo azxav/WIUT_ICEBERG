@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+samples/
+*.mp4
+*.MP4
+weights/*
+!weights/download.sh
+!weights/.gitkeep
+.ipynb_checkpoints/
