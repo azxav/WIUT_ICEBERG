@@ -1,0 +1,262 @@
+{
+  "ref_image": "scene_ref.jpg",
+  "ref_size": [
+    1920,
+    1080
+  ],
+  "notes": "Pixel coordinates in the reference background (C3905 framing, 1920x1080). Test videos are registered to scene_ref.jpg with a homography.",
+  "carriageways": {
+    "near": {
+      "polygon": [
+        [
+          60,
+          320
+        ],
+        [
+          330,
+          200
+        ],
+        [
+          1180,
+          520
+        ],
+        [
+          1920,
+          560
+        ],
+        [
+          1920,
+          1080
+        ],
+        [
+          900,
+          1080
+        ],
+        [
+          340,
+          742
+        ],
+        [
+          285,
+          548
+        ]
+      ],
+      "direction": [
+        0.92,
+        0.39
+      ],
+      "comment": "main road, traffic moves down-right"
+    },
+    "far": {
+      "polygon": [
+        [
+          100,
+          100
+        ],
+        [
+          300,
+          90
+        ],
+        [
+          900,
+          215
+        ],
+        [
+          1370,
+          335
+        ],
+        [
+          1830,
+          425
+        ],
+        [
+          1920,
+          440
+        ],
+        [
+          1920,
+          540
+        ],
+        [
+          1180,
+          515
+        ]
+      ],
+      "direction": [
+        -0.92,
+        -0.39
+      ],
+      "comment": "main road, traffic moves up-left"
+    }
+  },
+  "median": {
+    "polyline": [
+      [
+        120,
+        140
+      ],
+      [
+        1195,
+        520
+      ]
+    ],
+    "comment": "raised median, no crossing"
+  },
+  "stop_lines": {
+    "near": {
+      "line": [
+        [
+          285,
+          548
+        ],
+        [
+          940,
+          465
+        ]
+      ],
+      "signal": "veh_main",
+      "comment": "only controlled approach in view"
+    }
+  },
+  "crosswalks": {
+    "A_near": {
+      "polygon": [
+        [
+          335,
+          628
+        ],
+        [
+          1175,
+          530
+        ],
+        [
+          1185,
+          565
+        ],
+        [
+          370,
+          672
+        ]
+      ]
+    },
+    "B_far": {
+      "polygon": [
+        [
+          1200,
+          515
+        ],
+        [
+          1840,
+          462
+        ],
+        [
+          1850,
+          490
+        ],
+        [
+          1225,
+          545
+        ]
+      ]
+    },
+    "C_lower": {
+      "polygon": [
+        [
+          180,
+          790
+        ],
+        [
+          340,
+          742
+        ],
+        [
+          890,
+          1080
+        ],
+        [
+          600,
+          1080
+        ]
+      ]
+    }
+  },
+  "signals": {
+    "veh_main": {
+      "roi": [
+        1115,
+        345,
+        1190,
+        435
+      ],
+      "type": "vehicle_3lamp",
+      "comment": "median light, phase = near approach green (checked on C3905 crossings)"
+    },
+    "ped_left": {
+      "roi": [
+        245,
+        485,
+        300,
+        555
+      ],
+      "type": "pedestrian",
+      "comment": "same phase as veh_main"
+    }
+  },
+  "zones": {
+    "queue_near": {
+      "polygon": [
+        [
+          60,
+          320
+        ],
+        [
+          330,
+          200
+        ],
+        [
+          940,
+          445
+        ],
+        [
+          940,
+          465
+        ],
+        [
+          285,
+          548
+        ]
+      ],
+      "comment": "approach before near stop line: congestion / queue"
+    },
+    "junction": {
+      "polygon": [
+        [
+          370,
+          672
+        ],
+        [
+          1185,
+          565
+        ],
+        [
+          1920,
+          560
+        ],
+        [
+          1920,
+          1080
+        ],
+        [
+          900,
+          1080
+        ],
+        [
+          340,
+          742
+        ]
+      ],
+      "comment": "conflict area after the stop line"
+    }
+  },
+  "solid_lines": []
+}
