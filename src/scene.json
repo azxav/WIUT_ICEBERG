@@ -4,7 +4,7 @@
     1920,
     1080
   ],
-  "notes": "Pixel coordinates in the reference background (C3905 framing, 1920x1080). Test videos are registered to scene_ref.jpg with a homography.",
+  "notes": "Coordinates in C3905 1920x1080 reference. Crosswalks and curb/line positions audited against all four registered backgrounds and 4K crops. No lane arrows or turn-prohibition signs are legible; manoeuvre permissions remain unknown.",
   "carriageways": {
     "near": {
       "polygon": [
@@ -130,16 +130,16 @@
     "near": {
       "line": [
         [
-          285,
-          548
+          289,
+          545
         ],
         [
-          940,
-          465
+          934,
+          466
         ]
       ],
       "signal": "veh_main",
-      "comment": "only controlled approach in view"
+      "comment": "Across all near approach lanes; front bumper defines crossing."
     }
   },
   "crosswalks": {
@@ -295,23 +295,47 @@
   "signals": {
     "veh_main": {
       "roi": [
-        1115,
-        345,
-        1190,
-        435
+        1124,
+        352,
+        1180,
+        426
       ],
       "type": "vehicle_3lamp",
-      "comment": "median light, phase = near approach green (checked on C3905 crossings)"
+      "controls": "near",
+      "comment": "Median-side front-facing signal; red/amber/green for near approach."
     },
-    "ped_left": {
+    "left_red_green": {
       "roi": [
-        245,
-        485,
-        300,
-        555
+        249,
+        502,
+        291,
+        552
       ],
-      "type": "pedestrian",
-      "comment": "same phase as veh_main"
+      "type": "red_green_2lamp",
+      "controls": "near (probable)",
+      "comment": "Left-edge head turns red during median-head amber; use median red for vehicle red-light labels."
+    },
+    "gantry_left_back": {
+      "roi": [
+        368,
+        280,
+        399,
+        330
+      ],
+      "type": "signal_back",
+      "controls": null,
+      "comment": "Back of overhead signal; phase not visible."
+    },
+    "gantry_right_back": {
+      "roi": [
+        716,
+        253,
+        750,
+        311
+      ],
+      "type": "signal_back",
+      "controls": null,
+      "comment": "Back of overhead signal; phase not visible."
     }
   },
   "zones": {
@@ -343,55 +367,39 @@
     "junction": {
       "polygon": [
         [
-          370,
-          672
+          285,
+          545
         ],
         [
-          1185,
-          565
+          934,
+          466
+        ],
+        [
+          1188,
+          517
         ],
         [
           1920,
-          560
+          440
         ],
         [
           1920,
           1080
         ],
         [
-          880,
+          610,
           1080
         ],
         [
-          820,
-          1005
+          180,
+          787
         ],
         [
-          775,
-          955
-        ],
-        [
-          720,
-          920
-        ],
-        [
-          650,
-          890
-        ],
-        [
-          530,
-          835
-        ],
-        [
-          415,
-          785
-        ],
-        [
-          337,
-          740
+          335,
+          630
         ]
       ],
-      "comment": "conflict area after the stop line"
+      "comment": "Full visible conflict area from near stop line through side-road and crossing B/C."
     },
     "bus_stop_far": {
       "polygon": [
@@ -415,5 +423,413 @@
       "comment": "bus stop on far carriageway: bus dwell is not stopped_vehicle"
     }
   },
-  "solid_lines": []
+  "solid_lines": {
+    "near_curb_lane_end": {
+      "polyline": [
+        [
+          100,
+          292
+        ],
+        [
+          171,
+          355
+        ],
+        [
+          276,
+          440
+        ],
+        [
+          430,
+          506
+        ]
+      ],
+      "comment": "Near-side lane boundary becomes continuous on stop-line approach; partly occluded."
+    },
+    "near_median_edge": {
+      "polyline": [
+        [
+          120,
+          149
+        ],
+        [
+          401,
+          248
+        ],
+        [
+          780,
+          392
+        ],
+        [
+          1178,
+          514
+        ]
+      ],
+      "comment": "Yellow edge line along raised median; no vehicle crossing."
+    }
+  },
+  "dashed_lines": {
+    "near_lane_1": {
+      "polyline": [
+        [
+          120,
+          235
+        ],
+        [
+          260,
+          297
+        ],
+        [
+          420,
+          372
+        ],
+        [
+          650,
+          474
+        ]
+      ],
+      "comment": "Approximate centreline of dashed near-side lane marking; last metres occluded by vehicles."
+    },
+    "near_lane_2": {
+      "polyline": [
+        [
+          160,
+          185
+        ],
+        [
+          335,
+          255
+        ],
+        [
+          580,
+          352
+        ],
+        [
+          834,
+          459
+        ]
+      ],
+      "comment": "Dashed boundary of median-side near lane."
+    },
+    "far_lane_1": {
+      "polyline": [
+        [
+          120,
+          105
+        ],
+        [
+          380,
+          162
+        ],
+        [
+          770,
+          269
+        ],
+        [
+          1190,
+          374
+        ],
+        [
+          1600,
+          463
+        ]
+      ],
+      "comment": "Far-carriageway dashed lane divider, approximate through heavy occlusion."
+    },
+    "far_lane_2": {
+      "polyline": [
+        [
+          105,
+          135
+        ],
+        [
+          380,
+          213
+        ],
+        [
+          710,
+          307
+        ],
+        [
+          1070,
+          400
+        ],
+        [
+          1430,
+          479
+        ]
+      ],
+      "comment": "Second far-carriageway dashed divider, approximate."
+    }
+  },
+  "curbs": {
+    "near_left": {
+      "polyline": [
+        [
+          67,
+          310
+        ],
+        [
+          181,
+          409
+        ],
+        [
+          282,
+          545
+        ],
+        [
+          337,
+          740
+        ],
+        [
+          180,
+          787
+        ]
+      ],
+      "comment": "Near-side curb and sidewalk edge."
+    },
+    "near_median": {
+      "polyline": [
+        [
+          120,
+          141
+        ],
+        [
+          330,
+          213
+        ],
+        [
+          697,
+          353
+        ],
+        [
+          1150,
+          510
+        ],
+        [
+          1193,
+          523
+        ]
+      ],
+      "comment": "Raised central median edge."
+    },
+    "far_outer": {
+      "polyline": [
+        [
+          95,
+          83
+        ],
+        [
+          420,
+          118
+        ],
+        [
+          900,
+          212
+        ],
+        [
+          1370,
+          322
+        ],
+        [
+          1815,
+          412
+        ],
+        [
+          1920,
+          433
+        ]
+      ],
+      "comment": "Far-side sidewalk curb, partly hidden by trees."
+    },
+    "island_B": {
+      "polyline": [
+        [
+          1187,
+          515
+        ],
+        [
+          1305,
+          544
+        ],
+        [
+          1315,
+          566
+        ],
+        [
+          1193,
+          556
+        ]
+      ],
+      "comment": "Keep-right island between crossings A and B."
+    },
+    "island_C_inner": {
+      "polyline": [
+        [
+          495,
+          787
+        ],
+        [
+          621,
+          686
+        ],
+        [
+          761,
+          765
+        ],
+        [
+          505,
+          797
+        ]
+      ],
+      "comment": "First pedestrian refuge island by lower crossing."
+    },
+    "island_C_outer": {
+      "polyline": [
+        [
+          679,
+          886
+        ],
+        [
+          746,
+          828
+        ],
+        [
+          900,
+          855
+        ],
+        [
+          915,
+          889
+        ],
+        [
+          701,
+          920
+        ]
+      ],
+      "comment": "Second pedestrian refuge island by lower crossing."
+    }
+  },
+  "no_stopping": {
+    "near_crossing_A": {
+      "polygon": [
+        [
+          285,
+          545
+        ],
+        [
+          934,
+          466
+        ],
+        [
+          1175,
+          530
+        ],
+        [
+          335,
+          630
+        ]
+      ],
+      "basis": "stop line plus zebra crossing",
+      "comment": "Only red-light stop before the line is permitted."
+    },
+    "branch_crossing_B": {
+      "polygon": [
+        [
+          1195,
+          510
+        ],
+        [
+          1840,
+          460
+        ],
+        [
+          1853,
+          494
+        ],
+        [
+          1220,
+          547
+        ]
+      ],
+      "basis": "zebra crossing"
+    }
+  },
+  "lanes": {
+    "near_curb": {
+      "polygon": [
+        [
+          70,
+          310
+        ],
+        [
+          140,
+          250
+        ],
+        [
+          420,
+          505
+        ],
+        [
+          289,
+          545
+        ]
+      ],
+      "direction": [
+        0.88,
+        0.47
+      ],
+      "allowed_manoeuvres": "unknown",
+      "comment": "No legible turn arrow or restriction sign in samples."
+    },
+    "near_middle": {
+      "polygon": [
+        [
+          140,
+          250
+        ],
+        [
+          185,
+          195
+        ],
+        [
+          705,
+          475
+        ],
+        [
+          420,
+          505
+        ]
+      ],
+      "direction": [
+        0.9,
+        0.43
+      ],
+      "allowed_manoeuvres": "unknown"
+    },
+    "near_median": {
+      "polygon": [
+        [
+          185,
+          195
+        ],
+        [
+          320,
+          205
+        ],
+        [
+          1180,
+          515
+        ],
+        [
+          705,
+          475
+        ]
+      ],
+      "direction": [
+        0.92,
+        0.39
+      ],
+      "allowed_manoeuvres": "unknown"
+    }
+  }
 }
