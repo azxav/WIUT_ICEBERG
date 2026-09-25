@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WIUT CV labeling tool</title>
+<style>
+  :root { --bg:#111418; --panel:#1b2027; --line:#2c333d; --fg:#e6e9ee; --dim:#8b95a3; --acc:#4da3ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:13px/1.4 system-ui,Segoe UI,Arial,sans-serif; }
+  header { display:flex; gap:10px; align-items:center; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header b { font-size:14px; margin-right:8px; }
+  button, select, input { background:#252c35; color:var(--fg); border:1px solid var(--line); border-radius:4px; padding:4px 8px; font:inherit; }
+  button:hover { border-color:var(--acc); cursor:pointer; }
+  label.file { background:#252c35; border:1px solid var(--line); border-radius:4px; padding:4px 8px; cursor:pointer; }
+  label.file input { display:none; }
+  main { display:grid; grid-template-columns: 1fr 540px; height:calc(100vh - 46px); }
+  #left { display:flex; flex-direction:column; min-width:0; }
+  #stage { position:relative; flex:1; overflow:hidden; background:#000; cursor:crosshair; }
+  #video { position:absolute; left:0; top:0; width:100%; height:100%; object-fit:contain; transform-origin:0 0; }
+  #hud, #marks { position:absolute; top:8px; background:rgba(0,0,0,.65); padding:4px 8px; border-radius:4px; font:600 14px/1.3 Consolas,monospace; pointer-events:none; }
+  #hud { left:8px; } #marks { right:8px; }
+  #timeline { height:170px; background:var(--panel); border-top:1px solid var(--line); cursor:pointer; display:block; width:100%; }
+  #bar { display:flex; gap:6px; align-items:center; padding:6px 10px; background:var(--panel); border-top:1px solid var(--line); flex-wrap:wrap; }
+  #right { border-left:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+  #classes { display:grid; grid-template-columns:1fr 1fr; gap:3px; padding:8px; border-bottom:1px solid var(--line); }
+  .cls { padding:3px 6px; border-radius:4px; border:1px solid var(--line); cursor:pointer; display:flex; gap:6px; align-items:center; }
+  .cls.sel { outline:2px solid var(--acc); }
+  .cls i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+  .cls kbd { margin-left:auto; color:var(--dim); font:12px Consolas,monospace; }
+  #events { overflow:auto; flex:1; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:3px 4px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+  th { position:sticky; top:0; background:var(--panel); color:var(--dim); font-weight:600; }
+  tr.sel td { background:#22344a; }
+  tr.cand td { color:#c9b37a; }
+  td input.t { width:64px; padding:2px 4px; }
+  td input.note { width:110px; padding:2px 4px; }
+  td select { padding:2px; max-width:130px; }
+  td button { padding:1px 5px; }
+  #help { padding:8px 10px; border-top:1px solid var(--line); color:var(--dim); max-height:34vh; overflow:auto; }
+  #help table td { white-space:normal; border:none; padding:1px 4px; vertical-align:top; }
+  #msg { color:#ffcf66; }
+</style>
+</head>
+<body>
+<header>
+  <b>WIUT labeling</b>
+  <label class="file">Open video <input type="file" id="fVideo" accept="video/*"></label>
+  <span id="vname" style="color:var(--dim)">no video</span>
+  <label class="file">Import JSON <input type="file" id="fJson" accept=".json"></label>
+  <label title="Imported events are candidates until you verify them"><input type="checkbox" id="asCand" checked> import as candidates</label>
+  <button id="bExport">Export JSON</button>
+  <label><input type="checkbox" id="verOnly" checked> verified only</label>
+  fps <input id="fps" value="29.97" size="5">
+  <span id="msg"></span>
+</header>
+<main>
+  <div id="left">
+    <div id="stage"><video id="video" preload="auto"></video><div id="hud">--</div><div id="marks">S: -- &nbsp; E: --</div></div>
+    <div id="bar">
+      speed:
+      <button data-rate="0.25">0.25×</button><button data-rate="0.5">0.5×</button><button data-rate="1">1×</button>
+      <button data-rate="2">2×</button><button data-rate="4">4×</button><button data-rate="8">8×</button>
+      <span style="color:var(--dim)">| wheel = zoom, drag = pan, double-click = reset zoom</span>
+    </div>
+    <canvas id="timeline"></canvas>
+  </div>
+  <div id="right">
+    <div id="classes"></div>
+    <div id="events"><table><thead><tr><th>#</th><th>ok</th><th>class</th><th>start</th><th>end</th><th>dur</th><th>note</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+    <div id="help"></div>
+  </div>
+</main>
+<script>
+// [label, hotkey, colour, start rule, end rule] — rules from the task PDF "Event classes" table
+const CLASSES = [
+  ["accident","a","#ff4d4d","First frame with visible contact","All involved stop moving or leave frame"],
+  ["near_miss","n","#ff9f40","Onset of evasive braking / swerve (no contact)","Road users clear of each other"],
+  ["red_light","r","#ff3b8b","Front of vehicle crosses stop line while its signal is red","Vehicle leaves intersection or frame"],
+  ["wrong_way","w","#b36bff","Vehicle enters opposing lane","Back in correct lane or leaves frame"],
+  ["illegal_u_turn","u","#7f7fff","Vehicle starts turning","Turn completed"],
+  ["stopped_vehicle","s","#4dd2ff","Vehicle stops (>= 10 s, not in a signal queue)","Vehicle moves again or is removed"],
+  ["jaywalking","j","#4dff88","Pedestrian steps onto road outside a crossing","Pedestrian leaves the road"],
+  ["failure_to_yield","y","#d4ff4d","Vehicle enters crossing while pedestrian is on / stepping onto it","Vehicle leaves the crossing"],
+  ["illegal_turn","t","#ffd24d","Vehicle starts turning","Turn completed"],
+  ["solid_line_crossing","l","#ff7ad9","Wheel crosses the solid line","Vehicle fully in new lane"],
+  ["stop_line","p","#40e0d0","Vehicle stops past stop line on red (does not enter)","Signal turns green"],
+  ["congestion","c","#a0a0a0","Queue stops moving (standstill / crawl, all lanes of a direction)","Queue clears"],
+  ["road_obstacle","o","#c08040","Obstacle appears","Obstacle is removed"],
+  ["fire_smoke","f","#ff6030","First visible smoke / fire","Smoke clears or frame ends"],
+];
+const KEY2CLS = Object.fromEntries(CLASSES.map(c => [c[1], c[0]]));
+const COLOR = Object.fromEntries(CLASSES.map(c => [c[0], c[2]]));
+const STORE_KEY = "wiut_labels_v1";
+const $ = id => document.getElementById(id);
+const video = $("video"), stage = $("stage"), tl = $("timeline");
+let db = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");  // {videoKey: {duration, fps, events: [{s, e, label, ok, note}]}}
+let cur = null, selCls = "red_light", selRow = -1, markS = null, markE = null;
+let zoom = 1, panX = 0, panY = 0;
+
+const fps = () => parseFloat($("fps").value) || 29.97;
+const save = () => localStorage.setItem(STORE_KEY, JSON.stringify(db));
+const msg = t => { $("msg").textContent = t; clearTimeout(msg.h); msg.h = setTimeout(() => $("msg").textContent = "", 5000); };
+const r2 = x => Math.round(x * 100) / 100;
+const fmt = t => t == null ? "--" : `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+const keyOf = name => name.replace(/_1080p\.mp4$/i, "").replace(/\.[^.]+$/, "") + ".MP4";  // C3905_1080p.mp4 -> C3905.MP4
+const evs = () => cur ? db[cur].events : [];
+
+// ---------- class panel + help ----------
+function drawClasses() {
+  $("classes").innerHTML = CLASSES.map(c =>
+    `<div class="cls ${c[0] === selCls ? "sel" : ""}" data-c="${c[0]}"><i style="background:${c[2]}"></i>${c[0]}<kbd>${c[1]}</kbd></div>`).join("");
+  document.querySelectorAll(".cls").forEach(d => d.onclick = () => { selCls = d.dataset.c; drawClasses(); });
+}
+$("help").innerHTML = `<b>Keys</b>: Space play/pause · ←/→ 1 s · Shift+←/→ 5 s · , / . 1 frame · [ mark start · ] mark end ·
+ Enter add event (selected class) · Esc clear marks · letter key = select class · Shift+letter = change class of selected event ·
+ ↑/↓ select event · g / h go to start / end of selected · { / } set start / end of selected to now · v verify selected · Delete remove selected
+ <br><br><b>Start / end rules (task PDF)</b>
+ <table>${CLASSES.map(c => `<tr><td style="color:${c[2]}">${c[0]}</td><td>${c[3]}</td><td>→ ${c[4]}</td></tr>`).join("")}</table>
+ Event runs past video end → end = video duration. Two same-class events at the same time → one segment covering both.`;
+
+// ---------- video ----------
+$("fVideo").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  video.src = URL.createObjectURL(f);
+  cur = keyOf(f.name); $("vname").textContent = `${f.name} → key ${cur}`;
+  video.onloadedmetadata = () => {
+    db[cur] = db[cur] || { duration: r2(video.duration), fps: fps(), events: [] };
+    db[cur].duration = r2(video.duration); save(); resetZoom(); render();
+  };
+};
+document.querySelectorAll("[data-rate]").forEach(b => b.onclick = () => { video.playbackRate = parseFloat(b.dataset.rate); });
+const seek = t => { video.currentTime = Math.max(0, Math.min(video.duration || 0, t)); };
+const step = k => { video.pause(); seek((Math.round(video.currentTime * fps()) + k) / fps() + 0.001); };
+function hud() {
+  const t = video.currentTime || 0;
+  $("hud").textContent = `${fmt(t)}  (${t.toFixed(2)} s, frame ${Math.round(t * fps())})  ${video.playbackRate}×`;
+  $("marks").innerHTML = `S: ${markS == null ? "--" : markS.toFixed(2)} &nbsp; E: ${markE == null ? "--" : markE.toFixed(2)} &nbsp; [${selCls}]`;
+  drawTimeline(); requestAnimationFrame(hud);
+}
+requestAnimationFrame(hud);
+
+// zoom / pan
+function applyZoom() { video.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`; }
+function resetZoom() { zoom = 1; panX = panY = 0; applyZoom(); }
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const r = stage.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+  const nz = Math.max(1, Math.min(8, zoom * (e.deltaY < 0 ? 1.25 : 0.8)));
+  panX = mx - (mx - panX) * nz / zoom; panY = my - (my - panY) * nz / zoom; zoom = nz;
+  if (zoom === 1) panX = panY = 0;
+  applyZoom();
+}, { passive: false });
+let drag = null;
+stage.onmousedown = e => { drag = [e.clientX - panX, e.clientY - panY]; };
+window.onmouseup = () => { drag = null; };
+stage.onmousemove = e => { if (drag && zoom > 1) { panX = e.clientX - drag[0]; panY = e.clientY - drag[1]; applyZoom(); } };
+stage.ondblclick = resetZoom;
+
+// ---------- timeline: one row per class ----------
+function drawTimeline() {
+  const W = tl.clientWidth, H = tl.clientHeight;
+  if (tl.width !== W) tl.width = W;
+  if (tl.height !== H) tl.height = H;
+  const c = tl.getContext("2d"), D = video.duration || (cur && db[cur].duration) || 1, rowH = (H - 16) / CLASSES.length;
+  c.fillStyle = "#1b2027"; c.fillRect(0, 0, W, H);
+  c.font = "10px Consolas"; c.fillStyle = "#56606d";
+  const tick = D > 200 ? 30 : 10;
+  for (let t = 0; t < D; t += tick) { const x = t / D * W; c.fillRect(x, 0, 1, H); c.fillText(fmt(t), x + 2, H - 3); }
+  CLASSES.forEach((cl, i) => { c.fillStyle = "#232a33"; c.fillRect(0, i * rowH + 1, W, rowH - 2); });
+  evs().forEach((ev, k) => {
+    const i = CLASSES.findIndex(cl => cl[0] === ev.label), x = ev.s / D * W, w = Math.max(2, (ev.e - ev.s) / D * W);
+    c.globalAlpha = ev.ok ? 1 : 0.45; c.fillStyle = COLOR[ev.label]; c.fillRect(x, i * rowH + 1, w, rowH - 2);
+    if (k === selRow) { c.globalAlpha = 1; c.strokeStyle = "#fff"; c.strokeRect(x, i * rowH + 1, w, rowH - 2); }
+  });
+  c.globalAlpha = 1;
+  if (markS != null) { c.fillStyle = "#4dff88"; c.fillRect(markS / D * W, 0, 2, H); }
+  if (markE != null) { c.fillStyle = "#ff4d4d"; c.fillRect(markE / D * W, 0, 2, H); }
+  c.fillStyle = "#fff"; c.fillRect((video.currentTime || 0) / D * W - 1, 0, 2, H);
+}
+tl.onclick = e => {
+  const r = tl.getBoundingClientRect(), D = video.duration || 1, t = (e.clientX - r.left) / r.width * D;
+  const row = Math.floor((e.clientY - r.top) / ((r.height - 16) / CLASSES.length));
+  const hit = evs().findIndex(ev => ev.label === (CLASSES[row] || [])[0] && t >= ev.s && t <= ev.e);
+  if (hit >= 0) { selRow = hit; render(); }
+  seek(t);
+};
+
+// ---------- event table ----------
+function sortEvs() {
+  if (!cur) return;
+  const sel = evs()[selRow];
+  db[cur].events.sort((a, b) => a.s - b.s);
+  selRow = evs().indexOf(sel);
+}
+function render() {
+  sortEvs(); save(); drawClasses();
+  $("tbody").innerHTML = evs().map((ev, k) => `
+    <tr class="${k === selRow ? "sel" : ""} ${ev.ok ? "" : "cand"}" data-k="${k}">
+      <td>${k + 1}</td>
+      <td><input type="checkbox" data-f="ok" ${ev.ok ? "checked" : ""}></td>
+      <td><select data-f="label">${CLASSES.map(c => `<option ${c[0] === ev.label ? "selected" : ""}>${c[0]}</option>`).join("")}</select></td>
+      <td><input class="t" data-f="s" value="${ev.s.toFixed(2)}"></td>
+      <td><input class="t" data-f="e" value="${ev.e.toFixed(2)}"></td>
+      <td>${(ev.e - ev.s).toFixed(1)}</td>
+      <td><input class="note" data-f="note" value="${(ev.note || "").replace(/"/g, "&quot;")}"></td>
+      <td><button data-a="gs" title="go to start">▶S</button><button data-a="ge" title="go to end">▶E</button><button data-a="del" title="delete">✕</button></td>
+    </tr>`).join("");
+  document.querySelectorAll("#tbody tr").forEach(tr => {
+    const k = +tr.dataset.k, ev = evs()[k];
+    tr.onclick = e => { if (e.target.tagName === "TD") { selRow = k; seek(ev.s); render(); } };
+    tr.querySelectorAll("[data-f]").forEach(inp => inp.onchange = () => {
+      const f = inp.dataset.f;
+      if (f === "ok") ev.ok = inp.checked;
+      else if (f === "label") ev.label = inp.value;
+      else if (f === "note") ev.note = inp.value;
+      else ev[f] = r2(parseFloat(inp.value) || 0);
+      selRow = k; render();
+    });
+    tr.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+      selRow = k;
+      if (b.dataset.a === "gs") seek(ev.s);
+      else if (b.dataset.a === "ge") seek(ev.e);
+      else { evs().splice(k, 1); selRow = -1; }
+      render();
+    });
+  });
+}
+function addEvent() {
+  if (!cur) return msg("open a video first");
+  if (markS == null || markE == null) return msg("set start [ and end ] first");
+  const s = Math.min(markS, markE), e = Math.max(markS, markE);
+  if (e - s < 0.1) return msg("event too short");
+  db[cur].events.push({ s: r2(s), e: r2(e), label: selCls, ok: true, note: "" });
+  selRow = evs().length - 1; markS = markE = null; render();
+  msg(`added ${selCls} ${s.toFixed(2)}–${e.toFixed(2)}`);
+}
+
+// ---------- keys ----------
+document.addEventListener("keydown", e => {
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName) && e.key !== "Escape") return;
+  const k = e.key, ev = evs()[selRow], t = r2(video.currentTime || 0);
+  if (k === " ") { e.preventDefault(); video.paused ? video.play() : video.pause(); }
+  else if (k === "ArrowLeft") { e.preventDefault(); seek(video.currentTime - (e.shiftKey ? 5 : 1)); }
+  else if (k === "ArrowRight") { e.preventDefault(); seek(video.currentTime + (e.shiftKey ? 5 : 1)); }
+  else if (k === ",") step(-1);
+  else if (k === ".") step(1);
+  else if (k === "[") markS = t;
+  else if (k === "]") markE = t;
+  else if (k === "{" && ev) { ev.s = t; render(); }
+  else if (k === "}" && ev) { ev.e = t; render(); }
+  else if (k === "Enter") addEvent();
+  else if (k === "Escape") { markS = markE = null; document.activeElement.blur(); }
+  else if (k === "ArrowUp") { e.preventDefault(); selRow = Math.max(0, selRow - 1); render(); if (evs()[selRow]) seek(evs()[selRow].s); }
+  else if (k === "ArrowDown") { e.preventDefault(); selRow = Math.min(evs().length - 1, selRow + 1); render(); if (evs()[selRow]) seek(evs()[selRow].s); }
+  else if (k === "g" && ev) seek(ev.s);
+  else if (k === "h" && ev) seek(ev.e);
+  else if (k === "v" && ev) { ev.ok = !ev.ok; render(); }
+  else if (k === "Delete" && ev) { evs().splice(selRow, 1); selRow = -1; render(); }
+  else if (KEY2CLS[k.toLowerCase()] && !e.ctrlKey && !e.altKey) {
+    selCls = KEY2CLS[k.toLowerCase()];
+    if (ev && e.shiftKey) { ev.label = selCls; render(); } else drawClasses();
+  }
+});
+
+// ---------- import / export (ground-truth format of examples/ground_truth.json) ----------
+$("fJson").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const data = JSON.parse(await f.text());
+  let n = 0;
+  for (const [name, v] of Object.entries(data)) {
+    const key = keyOf(name);
+    db[key] = db[key] || { duration: v.duration, fps: v.fps, events: [] };
+    for (const [s, en, label] of v.events || []) {
+      const dup = db[key].events.some(x => x.label === label && Math.abs(x.s - s) < 0.05 && Math.abs(x.e - en) < 0.05);
+      if (!dup) { db[key].events.push({ s, e: en, label, ok: !$("asCand").checked, note: "imported" }); n++; }
+    }
+  }
+  render(); msg(`imported ${n} events from ${f.name}`); e.target.value = "";
+};
+$("bExport").onclick = () => {
+  const out = {}, warn = [];
+  for (const [key, v] of Object.entries(db)) {
+    const byCls = {};
+    for (const ev of v.events)
+      if (!$("verOnly").checked || ev.ok) (byCls[ev.label] = byCls[ev.label] || []).push([Math.max(0, ev.s), Math.min(v.duration, ev.e)]);
+    const events = [];
+    for (const [label, segs] of Object.entries(byCls)) {  // same-class overlaps -> one segment (PDF rule)
+      segs.sort((a, b) => a[0] - b[0]);
+      let [s, e] = segs[0];
+      for (const [s2, e2] of segs.slice(1)) {
+        if (s2 <= e) { warn.push(`${key} ${label} ${s2}`); e = Math.max(e, e2); }
+        else { events.push([r2(s), r2(e), label]); [s, e] = [s2, e2]; }
+      }
+      events.push([r2(s), r2(e), label]);
+    }
+    events.sort((a, b) => a[0] - b[0]);
+    out[key] = { duration: v.duration, fps: v.fps, events };
+  }
+  const blob = new Blob([JSON.stringify(out, null, 1)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "my_labels.json"; a.click();
+  const n = Object.values(out).reduce((m, v) => m + v.events.length, 0);
+  msg(`exported ${n} events` + (warn.length ? ` (${warn.length} same-class overlaps merged)` : ""));
+};
+render();
+</script>
+</body>
+</html>
