@@ -20,6 +20,17 @@ def test_accident_converge_touch_stop():
     assert set(ev.track_ids) == {1, 2} and ev.score > 0.5
 
 
+def test_accident_guards_queue_and_frame_edge():
+    # rear car brakes hard behind a standing car, then creeps the last metre into touching it: a queue
+    lead = obj(1, CAR, [(0, 1000, 600), (15, 1000, 600)])
+    rear = obj(2, CAR, [(0, -236, 600), (4.5, 664, 600), (5.5, 864, 600), (6, 872, 600), (7, 880, 600), (15, 880, 600)])
+    assert accident(_ctx([lead, rear], 16)) == []
+    # same head-on crash as the positive test, but at the right frame edge (boxes truncated there)
+    a = obj(1, CAR, [(0, 900, 600), (5, 1720, 600), (15, 1720, 600)])
+    b = obj(2, CAR, [(0, 2840, 600), (5, 1840, 600), (15, 1840, 600)])
+    assert accident(_ctx([a, b], 16)) == []
+
+
 def test_occlusion_pass_through_is_not_accident():
     # opposite directions in adjacent image rows: footprints overlap while passing, speeds stay constant
     a = obj(1, CAR, [(0, 100, 600), (10, 1800, 600)])

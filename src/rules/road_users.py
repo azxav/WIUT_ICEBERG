@@ -101,6 +101,8 @@ def jaywalking(ctx: Context) -> list[Event]:
     event boundaries come from the un-eroded test so the start is the moment
     they step onto the road and the end when they leave it.
     """
+    if not ctx.scene.crosswalks and not ctx.scene.carriageway:
+        return []  # no scene annotation: people on zebra crossings would all count
     cfg = rule_cfg(ctx, "jaywalking", DEFAULTS["jaywalking"])
     items: list[tuple[float, float, int, float]] = []
     for p in ctx.pedestrians:

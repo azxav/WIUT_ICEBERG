@@ -1,12 +1,15 @@
 {
   "perception": {
     "detector": "yolo11m.pt",
+    "decode_width": 1920,
     "imgsz": 960,
     "conf": 0.2,
     "iou": 0.6,
     "half": true,
     "batch": 8,
     "stride": 2,
+    "time_ratio": 1.0,
+    "max_stride_factor": 4,
     "track_activation_threshold": 0.3,
     "lost_track_sec": 2.0,
     "minimum_matching_threshold": 0.8,

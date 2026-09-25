@@ -7,7 +7,7 @@ mistaken for contact.
 
 * accident  = footprints touch AND at least one object brakes abruptly or
   jerks its heading around that moment AND afterwards the involved objects
-  come to rest (or one leaves). Two cars that merely pass behind each other
+  come to rest (or one's track is lost mid-frame). Two cars that merely pass behind each other
   in the image keep a steady velocity and are rejected.
 * near_miss = constant-velocity TTC drops below ~1.5 s while approaching AND
   one of them brakes hard or swerves AND they never touch.
@@ -39,6 +39,11 @@ DEFAULTS: dict[str, dict] = {
         "stop_within": 3.0,       # ... starting at most this long after first contact
         "leave_within": 5.0,      # or its track ends at most this long after first contact
         "min_duration": 2.0,      # floor on the emitted segment length
+        "border_frac": 0.02,      # ignore contacts with a box this close to the frame edge (truncated boxes)
+        "moving_before_sec": 2.0,
+        "min_impact_speed": 0.5,  # heights/s closing speed just before contact
+        "impact_window": 0.5,     # s
+        "max_jump": 6.0,          # heights/s of raw box motion beyond which a track is an ID swap  # only objects moving in this window before contact must stop / leave
     },
     "near_miss": {
         "foot_frac": 0.4,
@@ -130,25 +135,34 @@ def _abrupt(tr: Track, tc: float, c: dict) -> float:
     if _max_in(tr.t, tr.speed, tc - w, tc + 0.2) < c["min_pre_speed"]:
         return 0.0
     t, speed, heading = _local(tr, tc - 0.3 - w, tc + 1.5)
+    heading = np.where(speed >= c["min_pre_speed"], heading, np.nan)  # heading of a crawling box is noise
     drop = _max_in(t, speed_drop(t, speed, w), tc - 0.3, tc + 1.5)
     turn = _max_in(t, heading_change(t, heading, w), tc - 0.3, tc + 1.5)
     return max(drop / c["min_drop"], turn / c["heading_jump"])
 
 
-def _accident_episode(p: _Pair, s: float, c: dict) -> Event | None:
+def _accident_episode(ctx: Context, p: _Pair, s: float, c: dict) -> Event | None:
+    if ctx.at_border([tr.box[tr.index_at(s)] for tr in (p.a, p.b)], c["border_frac"]).any():
+        return None  # truncated boxes jump in size / position at the frame edge
+    if _max_in(p.t, p.closing, s - c["impact_window"], s + 0.1) < c["min_impact_speed"]:
+        return None  # crept up to touching: a queue, not an impact
+    if max(tr.max_jump(s - 1.5, s + 1.5) for tr in (p.a, p.b)) > c["max_jump"]:
+        return None  # a box teleported: ID swap between neighbours, not a real shock
     shocks = [_abrupt(tr, s, c) for tr in (p.a, p.b)]
     if max(shocks) < 1.0:
         return None  # steady velocities through the overlap: occlusion, not contact
     ends, stopped = [], False
     for tr in (p.a, p.b):
+        if _max_in(tr.t, tr.speed, s - c["moving_before_sec"], s + 0.2) < 0.5 * c["min_pre_speed"]:
+            continue  # was already standing (parked / queued): it is hit, not required to stop
         stop = _stop_time(tr, s - 0.5, s + c["stop_within"], c["still_sec"], c["stationary_speed"])
         if stop is not None:
             ends.append(stop)
             stopped = True
-        elif tr.end <= s + c["leave_within"]:
-            ends.append(tr.end)
+        elif tr.end <= s + c["leave_within"] and not ctx.at_border(tr.box[-1], c["border_frac"])[0]:
+            ends.append(tr.end)  # track lost mid-frame (occluded / wreck misdetected)
         else:
-            return None  # keeps driving normally
+            return None  # keeps driving normally, or simply drives out of view
     if not stopped:
         return None
     end = max(max(ends), s + c["min_duration"])
@@ -165,7 +179,7 @@ def accident(ctx: Context) -> list[Event]:
         if len(p) < 2 or p.gap.min() > c["contact_gap"]:
             continue
         for s, _ in flags_to_intervals(p.t, p.gap <= c["contact_gap"], max_gap=c["episode_gap"]):
-            ev = _accident_episode(p, s, c)
+            ev = _accident_episode(ctx, p, s, c)
             if ev is not None:
                 events.append(ev)
     return events

@@ -48,14 +48,17 @@ def test_jaywalking_simultaneous_people_is_one_event():
 
 
 def test_jaywalking_falls_back_to_flow_road_mask():
-    # no scene: road = cells cars drive through (rows y=620..740)
+    # crosswalks annotated but no carriageway: road = cells cars drive through (rows y=620..740)
+    far_cw = {"crosswalks": [{"id": "far", "polygon": [[0.0, 0.0], [0.1, 0.0], [0.1, 0.1], [0.0, 0.1]]}]}
     cars = [obj(10 + 6 * r + i, CAR, [(i * 1.5, 100, y), (i * 1.5 + 8, 1800, y)])
             for r, y in enumerate((620, 660, 700, 740)) for i in range(6)]
     ped = obj(1, PERSON, [(0, 960, 380), (10, 960, 920)], size=PED)
-    ctx = ctx_for(cars + [ped], 20)
+    ctx = ctx_for(cars + [ped], 20, far_cw)
     ev = run("jaywalking", ctx)
     assert len(ev) == 1 and 3.5 < ev[0].start < 5.0 and 6.5 < ev[0].end < 8.0
-    assert run("jaywalking", ctx_for(cars, 20)) == []
+    assert run("jaywalking", ctx_for(cars, 20, far_cw)) == []
+    # no scene at all: crossings cannot be told from jaywalking, so nothing is reported
+    assert run("jaywalking", ctx_for(cars + [ped], 20)) == []
 
 
 # ---------------------------------------------------------- failure_to_yield

@@ -54,6 +54,12 @@ DEFAULTS: dict[str, dict] = {
         "max_extrap_sec": 1.0,
         "heading_smooth_sec": 0.5,
         "min_path_heights": 1.5,      # rejects heading noise of near-stationary boxes
+        "min_net_deg": 135.0,         # travel direction before vs after the turn (displacement, not heading)
+        "net_window_sec": 1.5,        # displacement window on each side of the turn
+        "join_margin_sec": 1.0,
+        "min_net_heights": 0.75,      # displacement before and after the turn, each (rejects jitter)
+        "border_frac": 0.02,          # reject turns while the box touches the frame edge
+        "max_jump": 6.0,              # heights/s of raw box motion: faster means an ID swap       # reject turns this close to an ID-switch stitch (two vehicles glued)
     },
     "solid_line_crossing": {
         "max_lead_sec": 1.0,          # wheel-to-centre lead / lag cap
@@ -159,9 +165,34 @@ def _u_turns(ctx: Context, cfg: dict) -> list[tuple[Track, float, float, float]]
                 continue
             seg = (tr.t >= bounds[0]) & (tr.t <= bounds[1])
             path = np.linalg.norm(np.diff(tr.foot[seg], axis=0), axis=1).sum()
-            if path >= cfg["min_path_heights"] * float(np.median(tr.height[seg])):
+            if ctx.at_border(tr.box[seg], cfg["border_frac"]).any() or tr.max_jump(*bounds) > cfg["max_jump"]:
+                continue
+            if (path >= cfg["min_path_heights"] * float(np.median(tr.height[seg]))
+                    and _net_reversal(tr, *bounds, cfg) >= np.deg2rad(cfg["min_net_deg"])
+                    and not any(bounds[0] - cfg["join_margin_sec"] <= j <= bounds[1] + cfg["join_margin_sec"]
+                                for j in tr.joins)):
                 out.append((tr, bounds[0], bounds[1], float(abs(th[peak] - th[i]))))
     return out
+
+
+def _net_reversal(tr: Track, s: float, e: float, cfg: dict) -> float:
+    """Angle between the displacement entering the turn and the one leaving it.
+
+    Accumulated heading picks up noise and long curved turns; a real U-turn
+    also reverses the actual direction of travel.
+    """
+    w = cfg["net_window_sec"]
+
+    def disp(t0: float, t1: float) -> np.ndarray:
+        i0, i1 = tr.index_at(max(t0, tr.start)), tr.index_at(min(t1, tr.end))
+        return tr.foot[i1] - tr.foot[i0]
+
+    d_in, d_out = disp(s - w, s + 0.25 * (e - s)), disp(e - 0.25 * (e - s), e + w)
+    h = float(np.median(tr.height[(tr.t >= s - w) & (tr.t <= e + w)]))
+    if min(np.linalg.norm(d_in), np.linalg.norm(d_out)) < cfg["min_net_heights"] * h:
+        return 0.0
+    n = np.linalg.norm(d_in) * np.linalg.norm(d_out)
+    return float(np.arccos(np.clip(d_in @ d_out / n, -1.0, 1.0)))
 
 
 def _zone_visits(zones: list[str | None], t: np.ndarray, min_sec: float) -> list[tuple[str, int, int]]:

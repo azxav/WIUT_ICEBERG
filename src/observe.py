@@ -10,6 +10,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -18,7 +20,7 @@ import numpy as np
 
 from .perception import Detections, Detector, Tracker, weights_path
 from .scene import Scene
-from .video import VideoMeta, iter_frames, probe
+from .video import FrameReader, VideoMeta, output_size, probe
 
 # columns of Observations.tracks
 T_ID, T_TIME, T_X1, T_Y1, T_X2, T_Y2, T_CONF, T_CLS = range(8)
@@ -107,7 +109,11 @@ def observe(video_path: str | Path, params: dict, scene: Scene | None = None,
     tracker = Tracker(meta.fps / stride, p["lost_track_sec"], p["track_activation_threshold"],
                       p["minimum_matching_threshold"])
 
-    rois = [(f"{l.id}:{name}", box) for l in scene.lights for name, box in l.rois.items()]
+    # frames are decoded at a working resolution; everything stored stays in native pixels
+    fw, fh = output_size(meta.width, meta.height, p.get("decode_width"))
+    scale = np.array([meta.width / fw, meta.height / fh] * 2, np.float32)
+    rois = [(f"{l.id}:{name}", tuple(int(round(v / s)) for v, s in zip(box, scale)))
+            for l in scene.lights for name, box in l.rois.items()]
     times: list[float] = []
     rows: list[np.ndarray] = []
     lights: dict[str, list[np.ndarray]] = {k: [] for k, _ in rois}
@@ -122,12 +128,23 @@ def observe(video_path: str | Path, params: dict, scene: Scene | None = None,
         for (t, _), det in zip(batch, detector([f for _, f in batch])):
             ids, xyxy, conf, cls = tracker.update(det)
             if len(ids):
-                block = np.column_stack([ids, np.full(len(ids), t), xyxy, conf, cls])
+                block = np.column_stack([ids, np.full(len(ids), t), xyxy * scale, conf, cls])
                 rows.append(block)
 
+    # Time guard: Part A must leave room for Part B inside the harness budget
+    # (3x duration for both; the harness's own 4K decode for Part B is ~1x).
+    # If we run slower than time_ratio x real time, process fewer frames. On
+    # normal hardware this never fires, so output stays deterministic.
+    reader = FrameReader(video_path, stride, p.get("decode_width"))
+    max_stride = stride * int(p.get("max_stride_factor", 4))
+    ratio = float(p.get("time_ratio", 1.0))
+    t0 = time.perf_counter()
     batch: list[tuple[float, np.ndarray]] = []
-    for _, t, frame in iter_frames(video_path, stride):
+    for _, t, frame in reader:
         times.append(t)
+        if t > 5.0 and reader.stride < max_stride and time.perf_counter() - t0 > ratio * t:
+            reader.stride *= 2
+            print(f"[observe] {meta.name}: behind budget at t={t:.0f}s, stride -> {reader.stride}", file=sys.stderr)
         for key, box in rois:
             lights[key].append(light_roi_features(frame, box))
         if t >= next_thumb:
@@ -138,7 +155,7 @@ def observe(video_path: str | Path, params: dict, scene: Scene | None = None,
         if fire_detector is not None and t >= next_fire:
             for d in fire_detector([frame]):
                 for b, c, k in zip(d.xyxy, d.conf, d.cls):
-                    fire_rows.append([t, float(c), float(k), *map(float, b)])
+                    fire_rows.append([t, float(c), float(k), *map(float, b * scale)])
             next_fire = t + float(p["fire_every_sec"])
         batch.append((t, frame))
         if len(batch) >= int(p["batch"]):

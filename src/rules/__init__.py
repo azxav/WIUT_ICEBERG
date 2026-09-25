@@ -49,6 +49,13 @@ class Context:
     def cfg(self, label: str) -> dict:
         return self.params["classes"][label]
 
+    def at_border(self, boxes: np.ndarray, frac: float) -> np.ndarray:
+        """True for xyxy boxes within ``frac`` of the frame width of an edge (truncated boxes)."""
+        b = np.asarray(boxes, float).reshape(-1, 4)
+        w, h = self.meta.width, self.meta.height
+        m = frac * w
+        return (b[:, 0] <= m) | (b[:, 1] <= m) | (b[:, 2] >= w - m) | (b[:, 3] >= h - m)
+
     @cached_property
     def vehicles(self) -> list[Track]:
         return [t for t in self.tracks if t.category == "vehicle"]

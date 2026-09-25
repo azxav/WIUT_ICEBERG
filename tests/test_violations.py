@@ -128,6 +128,10 @@ def test_u_turn_negatives():
     straight = [(0, 200, 400), (8, 1800, 400)]
     assert _run("illegal_u_turn", [obj(1, CAR, right), obj(2, CAR, straight)], 11) == []
     assert _run("illegal_u_turn", [obj(1, CAR, U_TURN)], 12, {"u_turn_allowed": True}) == []
+    # a car jittering in place (heading swings around, but it goes nowhere)
+    rng = np.random.default_rng(0)
+    jitter = [(t, 900 + 60 * np.cos(t * 3) + rng.normal(0, 5), 600 + 40 * np.sin(t * 3)) for t in np.arange(0, 10, 0.1)]
+    assert _run("illegal_u_turn", [obj(1, CAR, jitter)], 11) == []
 
 
 RIGHT_TURN = [(0, 200, 500), (5, 900, 500)] + _arc(900, 600, 100, 0, np.pi / 2, 5, 6.5)[1:] + [(10, 1000, 1050)]

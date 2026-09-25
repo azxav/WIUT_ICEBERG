@@ -25,6 +25,7 @@ class Track:
     cls: np.ndarray         # (N,) COCO ids
     category: str = "vehicle"
     is_rider: bool = False  # person riding a bicycle / motorcycle
+    joins: list = field(default_factory=list)  # times where _stitch appended another track id
     # kinematics (filled by compute_kinematics)
     foot: np.ndarray = field(default=None, repr=False)     # (N, 2) smoothed bottom-centre
     height: np.ndarray = field(default=None, repr=False)   # (N,) smoothed box height, px
@@ -54,6 +55,18 @@ class Track:
 
     def raw_foot(self) -> np.ndarray:
         return np.column_stack([(self.box[:, 0] + self.box[:, 2]) / 2, self.box[:, 3]])
+
+    def max_jump(self, t0: float, t1: float) -> float:
+        """Largest unsmoothed box-centre speed (heights/s) in [t0, t1]; ID swaps show up as spikes."""
+        lo, hi = np.searchsorted(self.t, [t0, t1])
+        lo, hi = max(lo - 1, 0), min(hi + 1, len(self))
+        if hi - lo < 2:
+            return 0.0
+        b = self.box[lo:hi]
+        c = np.column_stack([(b[:, 0] + b[:, 2]) / 2, (b[:, 1] + b[:, 3]) / 2])
+        h = np.maximum(b[:, 3] - b[:, 1], 1.0)
+        step = np.linalg.norm(np.diff(c, axis=0), axis=1) / np.minimum(h[1:], h[:-1])
+        return float((step / np.maximum(np.diff(self.t[lo:hi]), 1e-6)).max())
 
 
 def _smooth(x: np.ndarray, n: int) -> np.ndarray:
@@ -120,6 +133,7 @@ def _stitch(tracks: list[Track], gap: float, dist_heights: float) -> list[Track]
             a.box = np.concatenate([a.box, best.box])
             a.conf = np.concatenate([a.conf, best.conf])
             a.cls = np.concatenate([a.cls, best.cls])
+            a.joins = a.joins + [best.start] + best.joins
             removed.add(id(best))
     return [t for t in tracks if id(t) not in removed]
 
