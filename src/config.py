@@ -46,14 +46,22 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return out
 
 
+TUNED_PARAMS = CONFIG_DIR / "params.tuned.json"
+
+
 def load_params(override: str | Path | dict | None = None) -> dict:
     """Defaults from configs/params.json, optionally merged with an override.
 
-    ``ICEBERG_PARAMS`` (a path to a JSON file) is honoured when no override is given.
+    Without an explicit override, ``ICEBERG_PARAMS`` (a JSON path) is used if
+    set, else ``configs/params.tuned.json`` if it exists, so the official run
+    picks up the output of ``scripts/tune.py`` with no extra flags.
     """
     params = json.loads((CONFIG_DIR / "params.json").read_text())
-    if override is None and os.environ.get("ICEBERG_PARAMS"):
-        override = os.environ["ICEBERG_PARAMS"]
+    if override is None:
+        if os.environ.get("ICEBERG_PARAMS"):
+            override = os.environ["ICEBERG_PARAMS"]
+        elif TUNED_PARAMS.exists():
+            override = TUNED_PARAMS
     if isinstance(override, (str, Path)):
         override = json.loads(Path(override).read_text())
     return _deep_merge(params, override) if override else params

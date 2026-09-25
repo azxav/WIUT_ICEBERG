@@ -2,7 +2,7 @@
 
     python scripts/tune.py                                 # all labelled classes -> configs/params.tuned.json
     python scripts/tune.py --classes stopped_vehicle congestion --trials 500
-    ICEBERG_PARAMS=configs/params.tuned.json python run_submission.py ...
+    python run_submission.py ...     # configs/params.tuned.json is loaded automatically
 
 Score A is a macro mean over classes, so each class is tuned on its own:
 maximise that class's mean F1 over tIoU {0.3, 0.5, 0.7} (``evaluate.evaluate_part_a``)
@@ -29,7 +29,7 @@ import numpy as np
 
 from _common import CONFIG_DIR, DEFAULT_CACHE, DEFAULT_VIDEOS, ROOT, iter_observations, load_params, write_json
 from evaluate import OFFICIAL_CLASSES, evaluate_part_a
-from src.config import _deep_merge
+from src.config import TUNED_PARAMS, _deep_merge
 from src.pipeline import build_context
 from src.rules import RULES, Context, Event
 from src.segments import finalize
@@ -169,6 +169,8 @@ def main() -> int:
     labels = json.loads(args.labels.read_text())
     if args.params is None and os.environ.get("ICEBERG_PARAMS"):
         args.params = Path(os.environ["ICEBERG_PARAMS"])
+    elif args.params is None and TUNED_PARAMS.exists():
+        args.params = TUNED_PARAMS  # build on the previous tuning run instead of discarding it
     params = load_params(args.params)
     contexts: dict[str, Context] = {}
     for _, obs in iter_observations(args.videos, params, args.cache, compute=False):
