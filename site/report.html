@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iceberg Report</title>
+<meta name="description" content="One-page report: traffic event detection and accident anticipation from fixed road cameras, team Iceberg, WIUT Hackathon 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=7">
+<script>try { const t = localStorage.getItem("iceberg-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="assets/config.js?v=7"></script>
+<style>
+  .report { max-width: 860px; margin: 0 auto; padding: 40px var(--gutter) 64px; }
+  .report header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .report h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); max-width: none; }
+  .report h2 { font-size: 1.5rem; margin-top: 26px; }
+  .report h2::before { width: 44px; height: 4px; margin-bottom: 8px; background: repeating-linear-gradient(90deg, var(--paint) 0 18px, transparent 18px 26px); }
+  .report p, .report li { max-width: 75ch; }
+  .report p { margin: 8px 0; }
+  .report ul { margin: 8px 0; padding-left: 1.2em; }
+  .report .byline { color: var(--ink-2); margin: 6px 0 0; }
+  .report .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  .report .table { font-size: .92rem; margin-top: 6px; }
+  .report .num-table td:not(:first-child) { text-align: right; }
+  .report .actions { display: flex; gap: 10px; }
+  @media (max-width: 700px) { .report .cols { grid-template-columns: 1fr; } }
+  @media print {
+    :root, :root[data-theme] { --bg: #fff; --surface: #fff; --surface-2: #eee; --ink: #111; --ink-2: #444; --rule: #bbb; --paint-ink: #7a5c00; color-scheme: light; }
+    body { font-size: 10.5pt; line-height: 1.4; }
+    .report { padding: 0; max-width: none; }
+    .report .actions { display: none; }
+    .report h1 { font-size: 22pt; }
+    .report h2 { font-size: 13pt; margin-top: 12px; }
+    .report h2::before { display: none; }
+    @page { size: A4; margin: 14mm; }
+  }
+</style>
+</head>
+<body>
+<article class="report">
+  <header>
+    <div>
+      <h1>Traffic events from a fixed camera</h1>
+      <p class="byline">Team Iceberg, WIUT Hackathon 2026, computer vision track. <span id="rDate"></span></p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="index.html">Back to the site</a>
+      <button class="btn btn-primary" type="button" onclick="window.print()">Print or save as PDF</button>
+    </div>
+  </header>
+
+  <h2>Problem</h2>
+  <p>Given several minutes of 25 fps video from a fixed road camera, output every traffic event of fourteen classes as
+    <code>[start, end, label]</code> (Part A, macro F1 at tIoU 0.3, 0.5 and 0.7), and a causal per-frame probability that an
+    accident starts within five seconds (Part B). Everything runs offline on one T4 within three times the video length.</p>
+
+  <div class="cols">
+    <div>
+      <h2>Method</h2>
+      <ul>
+        <li><strong>Perception, once per video.</strong> YOLO11m on every 2nd frame, ByteTrack, then stitching of broken tracks and smoothed kinematics
+          (speed in box heights per second, a cheap perspective correction).</li>
+        <li><strong>Scene.</strong> Lanes with direction, stop lines, solid lines, crossings and signal lamps drawn once per camera; signal state from lamp pixel colour;
+          a flow field of the usual travel direction learned from the video's own tracks.</li>
+        <li><strong>Rules.</strong> One rule per class on trajectories and geometry (for example: front crosses a stop line while its lamp is red).
+          Segments are cleaned with hysteresis, merging, minimum length and per-class boundary offsets.</li>
+        <li><strong>Risk.</strong> A causal model over the frame stream <!-- TODO: describe the final Part B model --> scores the chance of a collision in the next five seconds.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Why this design</h2>
+      <ul>
+        <li>A few labelled samples cannot train a fourteen-class video model; most classes are geometric and rules state them exactly.</li>
+        <li>Rules give sharp boundaries, which the 0.7 tIoU threshold rewards.</li>
+        <li>Rules re-run from cached tracks in seconds, so every threshold is tuned against our labels.</li>
+        <li>A wrongly emitted absent class costs a whole zero-F1 class, so rare classes run with strict thresholds.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Results on the sample videos</h2>
+  <p id="rSummary">Loading numbers&hellip;</p>
+  <table class="table num-table" id="rTable">
+    <thead><tr><th>Class</th><th>F1 @0.3</th><th>F1 @0.5</th><th>F1 @0.7</th><th>Labelled</th><th>Predicted</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Limits and next steps</h2>
+  <ul>
+    <li>Scene layouts are hand-drawn per camera; a new camera needs ten minutes of annotation before the geometric rules apply.</li>
+    <li>Objects outside COCO (debris, boxes) are missed by the detector, which limits road obstacle recall.</li>
+    <li>Night glare and saturated lamps shift signal-state changes, costing boundary precision on red-light events.</li>
+    <li>The samples are small: our scores carry wide uncertainty, and thresholds may overfit them.</li>
+  </ul>
+</article>
+<script>
+(async () => {
+  const cfg = window.ICEBERG_CONFIG || {};
+  let d = null;
+  for (const u of cfg.DATA_URLS || ["data/results.json", "data/results.sample.json"]) {
+    try { const r = await fetch(u, { cache: "no-cache" }); if (r.ok) { d = await r.json(); break; } } catch (e) {}
+  }
+  const el = (id) => document.getElementById(id);
+  if (!d) { el("rSummary").textContent = "Numbers load from data/results.json when the site is served over HTTP."; return; }
+  const s = d.summary || {}, f = (x) => (x == null ? "n/a" : Number(x).toFixed(2));
+  if (d.generated_at) el("rDate").textContent = `Data of ${d.generated_at.slice(0, 10)}${d.is_sample ? " (sample data)" : ""}.`;
+  const mins = Math.round((s.footage_sec || 0) / 60);
+  el("rSummary").textContent = `${s.videos} videos, about ${mins} min of footage, ${s.events} detected events. ` +
+    `Score A ${f(s.score_a)}, Score B ${f(s.score_b)}, model score ${f(s.model_score)}` +
+    (s.runtime_x_realtime != null ? `; processing takes ${s.runtime_x_realtime}x the video length on a T4.` : ".");
+  const tb = el("rTable").querySelector("tbody");
+  const pc = s.per_class || {};
+  const rows = (d.classes || Object.keys(pc)).filter((c) => pc[c]);
+  if (!rows.length) { el("rTable").hidden = true; return; }
+  for (const c of rows) {
+    const tr = document.createElement("tr");
+    for (const v of [c.replace(/_/g, " "), f(pc[c].f1_03), f(pc[c].f1_05), f(pc[c].f1_07), pc[c].gt, pc[c].pred]) {
+      const td = document.createElement("td"); td.textContent = v; tr.append(td);
+    }
+    tb.append(tr);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,2 +1,16 @@
-numpy>=1.24
-opencv-python-headless>=4.8
+# Runtime dependencies of the submission (python run_submission.py ...). Python 3.11.
+#
+# torch / torchvision: install the CUDA build first, then the rest, e.g.
+#   pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
+#   pip install -r requirements.txt
+# (the Docker image already ships them; a CPU-only torch also works, just slowly).
+torch==2.6.0
+torchvision==0.21.0
+numpy==2.4.6
+scipy==1.17.1
+ultralytics==8.4.161
+supervision==0.30.5
+# ultralytics depends on opencv-python; pinning it to the same version as the
+# headless wheel keeps a single, consistent cv2 in site-packages.
+opencv-python-headless==4.13.0.92
+opencv-python==4.13.0.92

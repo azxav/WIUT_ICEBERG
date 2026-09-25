@@ -1,0 +1,14 @@
+.git
+.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ipynb_checkpoints
+.cache
+renders
+samples
+notebooks
+*.mp4
+*.MP4
+predictions*.json
+weights/*.part

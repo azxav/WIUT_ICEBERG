@@ -1,0 +1,4 @@
+# Dev-only tools (scripts/eda.py plots, tests). Not needed for the official run.
+-r requirements.txt
+matplotlib==3.10.8
+pytest==8.4.2

@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iceberg Traffic Events</title>
+<meta name="description" content="Team Iceberg, WIUT Hackathon 2026: detecting fourteen kinds of traffic event and anticipating accidents in fixed road-camera video.">
+<meta name="theme-color" content="#23292F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2323292F'/%3E%3Crect x='6' y='14' width='6' height='4' fill='%23F2C230'/%3E%3Crect x='14' y='14' width='6' height='4' fill='%23F2C230'/%3E%3Crect x='22' y='14' width='4' height='4' fill='%23F2C230'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=7">
+<script>
+  // Apply the saved theme before first paint.
+  // ?theme=light|dark wins (handy for screenshots), then the saved choice, then the system setting.
+  try {
+    const q = new URLSearchParams(location.search).get("theme");
+    const t = q === "light" || q === "dark" ? q : localStorage.getItem("iceberg-theme");
+    if (t) document.documentElement.dataset.theme = t;
+  } catch (e) {}
+</script>
+<script src="assets/config.js?v=7"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7" crossorigin="anonymous"></script>
+<script defer src="assets/app.js?v=7"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <nav class="nav" aria-label="Sections">
+    <a class="brand" href="#top" aria-label="Iceberg, back to top">
+      <svg viewBox="0 0 40 16" aria-hidden="true"><rect x="0" y="6" width="10" height="4"/><rect x="15" y="6" width="10" height="4"/><rect x="30" y="6" width="10" height="4"/></svg>
+      Iceberg
+    </a>
+    <div class="nav-links">
+      <a href="#demo">Demo</a>
+      <a href="#results">Results</a>
+      <a href="#data">Data</a>
+      <a href="#approach">Approach</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#report">Report</a>
+      <a href="#team">Team</a>
+      <a href="#links">Links</a>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+    </button>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- ============================================================ hero -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <p class="kicker">Team Iceberg, WIUT Hackathon 2026, computer vision track</p>
+      <h1>Fourteen kinds of traffic event, read off one fixed camera.</h1>
+      <p class="lede">We turn hours of road CCTV into a short list of timestamped events (red-light runs,
+        jaywalking, collisions, stalled cars, smoke) and a live score for how likely a crash is in the next five seconds.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#demo">Try it on your clip</a>
+        <a class="btn" href="#results">Watch the sample results</a>
+      </div>
+    </div>
+    <figure class="wrap hero-lanes">
+      <div id="heroLanes" class="lanes lanes-hero" aria-label="Event timeline of the first sample video"></div>
+      <figcaption id="heroCaption">Loading detections&hellip;</figcaption>
+    </figure>
+  </section>
+
+  <div id="sampleBanner" class="sample-banner" hidden>
+    <div class="wrap">Showing sample data. Real numbers appear once <code>site/build_data.py</code> has written <code>data/results.json</code>.</div>
+  </div>
+
+  <!-- ============================================================ demo -->
+  <section class="section" id="demo">
+    <div class="wrap">
+      <h2>Live demo</h2>
+      <p class="section-lede">Upload a road-camera clip, up to two minutes and 200 MB. The demo runs the full pipeline on a CPU
+        with a smaller detector and returns the events, a timeline, the annotated video and the risk curve. Expect it to take
+        one to three times the length of the clip.</p>
+      <div id="demoFrame" class="demo-frame"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ results -->
+  <section class="section" id="results">
+    <div class="wrap">
+      <h2>Results on the sample videos</h2>
+      <p class="section-lede">Every detection on the organizers' sample clips, next to our own labels. Click any event, or anywhere on
+        the timeline or risk curve, to jump the video there.</p>
+
+      <div class="tabs" id="videoTabs" role="tablist" aria-label="Sample videos"></div>
+
+      <div class="player-grid">
+        <div class="player">
+          <div class="video-box">
+            <video id="player" controls playsinline preload="metadata"></video>
+            <div class="video-missing" id="videoMissing" hidden>
+              <p><strong>Annotated render not published yet.</strong></p>
+              <p>Run <code>scripts/render.py</code> and <code>site/build_data.py</code>; the video lands in <code>site/media/</code>.
+                The timeline still works: clicks move the clock below.</p>
+              <p class="clock" id="virtualClock">0:00.0</p>
+            </div>
+          </div>
+          <p class="video-meta" id="videoMeta"></p>
+        </div>
+        <aside class="event-list-box">
+          <h3>Events <span class="count" id="eventCount"></span></h3>
+          <ol class="event-list" id="eventList"></ol>
+        </aside>
+      </div>
+
+      <div class="timeline-head">
+        <h3>Timeline</h3>
+        <label class="toggle"><input type="checkbox" id="gtToggle" checked> Show our labels under each prediction</label>
+      </div>
+      <div id="resultLanes" class="lanes" aria-label="Event timeline, click to seek"></div>
+      <div class="legend-inline" id="statusLegend">
+        <span><i class="sw sw-tp"></i>matches a label (tIoU &ge; 0.5)</span>
+        <span><i class="sw sw-boundary"></i>right class, boundaries off</span>
+        <span><i class="sw sw-fp"></i>no matching label</span>
+        <span><i class="sw sw-gt"></i>our label</span>
+      </div>
+
+      <h3>Accident risk</h3>
+      <p class="note">Causal score: at each moment the model has seen only the past. The dashed line is the 0.5 alarm threshold used by the metric.</p>
+      <div id="riskChart" class="chart chart-risk"></div>
+
+      <dl class="stats" id="videoStats"></dl>
+
+      <h3>Examples by class</h3>
+      <div class="examples" id="examples"></div>
+
+      <h3>Where it fails</h3>
+      <p class="note">The cases we get wrong on the samples, and why. These drive the next round of fixes.</p>
+      <div class="failures" id="failures"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ data -->
+  <section class="section" id="data">
+    <div class="wrap">
+      <h2>What the sample videos contain</h2>
+      <p class="section-lede">Before writing rules we measured the footage: how busy each scene is, which events occur and how long they last.
+        Event length matters because the metric requires overlap of up to 70%, so a one-second error on a five-second event already fails.</p>
+      <div class="eda-grid">
+        <dl class="facts" id="edaFacts"></dl>
+        <div>
+          <h3>Road users over time</h3>
+          <div id="edaTraffic" class="chart"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Labelled events per class</h3>
+          <div id="edaCounts" class="chart"></div>
+        </div>
+        <div>
+          <h3>Event length by class</h3>
+          <div id="edaDurations" class="chart"></div>
+        </div>
+      </div>
+      <div class="figures" id="edaFigures"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ approach -->
+  <section class="section" id="approach">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="section-lede">A detector and tracker turn the video into trajectories once. Everything after that is geometry and timing
+        on those trajectories plus a hand-drawn map of the scene, so the fourteen rules re-run in seconds while we tune them.</p>
+
+      <figure class="pipeline">
+        <svg class="pipeline-svg" viewBox="0 0 1000 410" role="img" aria-labelledby="pipeTitle pipeDesc">
+          <title id="pipeTitle">Pipeline diagram</title>
+          <desc id="pipeDesc">Video frames are sampled, detected with YOLO11 and tracked with ByteTrack. Tracks, the scene layout, signal state, a fire and smoke detector and a learned flow field feed fourteen rules; segments are cleaned into events. A separate causal risk model reads every frame and outputs the accident risk curve.</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" class="arrow-head"/>
+            </marker>
+          </defs>
+          <g class="pipe-row">
+            <g class="node node-io"><rect x="20" y="20" width="170" height="64" rx="6"/><text x="105" y="47">Video</text><text class="sub" x="105" y="67">25 fps, fixed camera</text></g>
+            <g class="node node-logic"><rect x="215" y="20" width="170" height="64" rx="6"/><text x="300" y="47">Frame sampler</text><text class="sub" x="300" y="67">every 2nd frame</text></g>
+            <g class="node node-learned"><rect x="410" y="20" width="170" height="64" rx="6"/><text x="495" y="47">Detector</text><text class="sub" x="495" y="67">YOLO11m, COCO</text></g>
+            <g class="node node-logic"><rect x="605" y="20" width="170" height="64" rx="6"/><text x="690" y="47">Tracker</text><text class="sub" x="690" y="67">ByteTrack</text></g>
+            <g class="node node-logic"><rect x="800" y="20" width="170" height="64" rx="6"/><text x="885" y="47">Tracks</text><text class="sub" x="885" y="67">stitch, smooth, speed</text></g>
+            <path class="edge" d="M190 52H213" marker-end="url(#arrow)"/>
+            <path class="edge" d="M385 52H408" marker-end="url(#arrow)"/>
+            <path class="edge" d="M580 52H603" marker-end="url(#arrow)"/>
+            <path class="edge" d="M775 52H798" marker-end="url(#arrow)"/>
+          </g>
+          <g class="pipe-row">
+            <g class="node node-annotated"><rect x="20" y="150" width="170" height="64" rx="6"/><text x="105" y="177">Scene layout</text><text class="sub" x="105" y="197">hand-drawn lanes, lines</text></g>
+            <g class="node node-logic"><rect x="215" y="150" width="170" height="64" rx="6"/><text x="300" y="177">Signal state</text><text class="sub" x="300" y="197">colour of lamp pixels</text></g>
+            <g class="node node-learned"><rect x="410" y="150" width="170" height="64" rx="6"/><text x="495" y="177">Fire and smoke</text><text class="sub" x="495" y="197">fine-tuned YOLO, 1 fps</text></g>
+            <g class="node node-learned"><rect x="605" y="150" width="170" height="64" rx="6"/><text x="690" y="177">Flow field</text><text class="sub" x="690" y="197">learned from the tracks</text></g>
+            <g class="node node-logic node-key"><rect x="800" y="150" width="170" height="64" rx="6"/><text x="885" y="177">Event rules</text><text class="sub" x="885" y="197">14 classes</text></g>
+            <path class="edge" d="M885 84V148" marker-end="url(#arrow)"/>
+            <path class="edge" d="M105 214V238H830V216" marker-end="url(#arrow)"/>
+            <path class="edge" d="M300 214V238M495 214V238M690 214V238"/>
+          </g>
+          <g class="pipe-row">
+            <text class="group-label" x="20" y="286">Part B, every frame in order</text>
+            <g class="node node-io"><rect x="20" y="300" width="170" height="64" rx="6"/><text x="105" y="327">Frame stream</text><text class="sub" x="105" y="347">only the past is visible</text></g>
+            <g class="node node-learned"><rect x="215" y="300" width="170" height="64" rx="6"/><text x="300" y="327">Risk model</text><text class="sub" x="300" y="347">causal step()</text></g>
+            <g class="node node-io"><rect x="410" y="300" width="170" height="64" rx="6"/><text x="495" y="327">Risk curve</text><text class="sub" x="495" y="347">P(crash within 5 s)</text></g>
+            <path class="edge" d="M190 332H213" marker-end="url(#arrow)"/>
+            <path class="edge" d="M385 332H408" marker-end="url(#arrow)"/>
+            <text class="group-label" x="605" y="286">Part A output</text>
+            <g class="node node-io"><rect x="605" y="300" width="170" height="64" rx="6"/><text x="690" y="327">Events</text><text class="sub" x="690" y="347">[start, end, label]</text></g>
+            <g class="node node-logic"><rect x="800" y="300" width="170" height="64" rx="6"/><text x="885" y="327">Segment cleanup</text><text class="sub" x="885" y="347">hysteresis, merge, trim</text></g>
+            <path class="edge" d="M940 214V298" marker-end="url(#arrow)"/>
+            <path class="edge" d="M800 332H777" marker-end="url(#arrow)"/>
+          </g>
+          <g class="pipe-legend" transform="translate(20 392)">
+            <rect class="lg-learned" x="0" y="-11" width="22" height="14" rx="3"/><text x="30" y="0">learned model</text>
+            <rect class="lg-logic" x="150" y="-11" width="22" height="14" rx="3"/><text x="180" y="0">hand-written logic</text>
+            <rect class="lg-annotated" x="330" y="-11" width="22" height="14" rx="3"/><text x="360" y="0">annotated once per camera</text>
+          </g>
+        </svg>
+        <ol class="pipeline-list">
+          <li><strong>Frame sampler.</strong> Every 2nd frame of the 25 fps video.</li>
+          <li><strong>Detector</strong> (learned). YOLO11m on COCO classes: people, bikes, cars, buses, trucks, animals, traffic lights.</li>
+          <li><strong>Tracker.</strong> ByteTrack links boxes into tracks; broken tracks are stitched and smoothed, speeds measured in box heights per second.</li>
+          <li><strong>Scene layout</strong> (annotated). Lanes with direction, stop lines, solid lines, crossings, signal lamps.</li>
+          <li><strong>Signal state, fire and smoke, flow field.</strong> Lamp colour from pixels, a fine-tuned fire and smoke detector, and the usual direction of travel learned per grid cell.</li>
+          <li><strong>Event rules.</strong> One rule per class on tracks and geometry, then segment cleanup into <code>[start, end, label]</code>.</li>
+          <li><strong>Risk model</strong> (Part B). Reads frames in order and outputs the chance of a crash in the next five seconds.</li>
+        </ol>
+      </figure>
+
+      <div class="two-col">
+        <div>
+          <h3>Learned or rule-based</h3>
+          <table class="table">
+            <thead><tr><th>Component</th><th>Kind</th><th>Trained on</th></tr></thead>
+            <tbody>
+              <tr><td>Object detector</td><td><span class="kind kind-learned">learned</span></td><td>COCO (pre-trained YOLO11)</td></tr>
+              <tr><td>Fire and smoke detector</td><td><span class="kind kind-learned">learned</span></td><td>Public fire and smoke images <!-- TODO: name dataset --></td></tr>
+              <tr><td>Flow field</td><td><span class="kind kind-learned">learned</span></td><td>This video's own tracks, unsupervised</td></tr>
+              <tr><td>Risk model</td><td><span class="kind kind-learned">learned</span></td><td>Track features around labelled crashes <!-- TODO: confirm --></td></tr>
+              <tr><td>Tracker, stitching</td><td><span class="kind kind-logic">logic</span></td><td>Tuned thresholds</td></tr>
+              <tr><td>Signal state</td><td><span class="kind kind-logic">logic</span></td><td>Colour thresholds</td></tr>
+              <tr><td>Fourteen event rules</td><td><span class="kind kind-logic">logic</span></td><td>Thresholds tuned on our sample labels</td></tr>
+              <tr><td>Scene layout</td><td><span class="kind kind-annotated">annotated</span></td><td>Drawn once per camera</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>Why rules on trajectories</h3>
+          <ul class="prose-list">
+            <li>There are a handful of labelled sample videos, far too few to train a fourteen-class video model.</li>
+            <li>Most classes are defined by geometry and signal state (crossing a line on red, driving against the lane direction), which rules express exactly and explain.</li>
+            <li>Boundaries score at tIoU up to 0.7, and rules give frame-precise starts and ends that we can shift per class.</li>
+            <li>Detection runs once; rules re-run from cached tracks in seconds, so tuning all fourteen classes is cheap.</li>
+            <li>Emitting a class that is absent from the test set costs a whole zero-F1 class, so rare classes use strict thresholds.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>The fourteen rules</h3>
+      <div class="table-scroll">
+        <table class="table rules-table" id="rulesTable">
+          <thead><tr><th>Class</th><th>What triggers it</th><th>Start and end</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ evaluation -->
+  <section class="section" id="evaluation">
+    <div class="wrap">
+      <h2>Evaluation</h2>
+      <p class="section-lede">Scored with the organizers' <code>evaluate.py</code> against our own labels of the sample clips:
+        macro F1 over classes at tIoU 0.3, 0.5 and 0.7 for events, and alarm quality for the risk score.
+        Treat these as development numbers; the samples are small.</p>
+      <dl class="scoreline" id="scoreline"></dl>
+      <div class="two-col">
+        <div>
+          <h3>F1 per class</h3>
+          <div id="f1Chart" class="chart"></div>
+        </div>
+        <div>
+          <h3>What gets confused with what</h3>
+          <div id="confusionChart" class="chart"></div>
+          <p class="note" id="confusionNote"></p>
+        </div>
+      </div>
+      <h3>Ablations</h3>
+      <p class="note">Each row removes or swaps one part of the pipeline; everything else is unchanged.</p>
+      <div class="table-scroll">
+        <table class="table num-table" id="ablationTable">
+          <thead><tr><th>Variant</th><th>Score A</th><th>F1 @0.3</th><th>F1 @0.5</th><th>F1 @0.7</th><th>Score B</th><th>Time / video length</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ dashboard -->
+  <section class="section" id="dashboard">
+    <div class="wrap">
+      <h2>Operator dashboard</h2>
+      <p class="section-lede">What a traffic operator would see at the end of a shift: which violations happen, when, and where to look.</p>
+      <div class="filters" id="classFilters" role="group" aria-label="Filter by class"></div>
+      <div class="two-col">
+        <div>
+          <h3>Events per class</h3>
+          <div id="dashClass" class="chart"></div>
+        </div>
+        <div>
+          <h3>Events by hour of day</h3>
+          <div id="dashHour" class="chart"></div>
+        </div>
+      </div>
+      <h3>Event log</h3>
+      <div class="table-scroll log-scroll">
+        <table class="table log-table" id="eventLog">
+          <thead><tr><th>Video</th><th>Clock time</th><th>Class</th><th>Duration</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ report -->
+  <section class="section" id="report">
+    <div class="wrap report-teaser">
+      <div>
+        <h2>One-page report</h2>
+        <p class="section-lede">The problem, our method, the numbers and the known limits on a single printable page.</p>
+        <a class="btn btn-primary" href="report.html">Read the report</a>
+      </div>
+      <ul class="report-points" id="reportPoints"></ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ team -->
+  <section class="section" id="team">
+    <div class="wrap">
+      <h2>Team</h2>
+      <div class="team" id="teamGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ links -->
+  <section class="section" id="links">
+    <div class="wrap">
+      <h2>Links</h2>
+      <ul class="link-list" id="linkList"></ul>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">Team Iceberg, WIUT Hackathon 2026. <span id="generatedAt"></span></div>
+</footer>
+</body>
+</html>

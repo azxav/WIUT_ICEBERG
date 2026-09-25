@@ -1,10 +1,15 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.ipynb_checkpoints/
 samples/
 *.mp4
 *.MP4
 weights/*
 !weights/download.sh
 !weights/.gitkeep
-.ipynb_checkpoints/
+# dev artefacts: observation cache, renders / plots, local predictions
+.cache/
+renders/
+/predictions*.json

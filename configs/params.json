@@ -1,0 +1,52 @@
+{
+  "perception": {
+    "detector": "yolo11m.pt",
+    "imgsz": 960,
+    "conf": 0.2,
+    "iou": 0.6,
+    "half": true,
+    "batch": 8,
+    "stride": 2,
+    "track_activation_threshold": 0.3,
+    "lost_track_sec": 2.0,
+    "minimum_matching_threshold": 0.8,
+    "thumb_every_sec": 1.0,
+    "thumb_width": 320,
+    "fire_detector": "fire_smoke.pt",
+    "fire_every_sec": 1.0,
+    "fire_conf": 0.35
+  },
+  "tracks": {
+    "min_obs": 5,
+    "smooth_sec": 0.6,
+    "stitch_gap_sec": 3.0,
+    "stitch_dist_heights": 0.6,
+    "moving_speed": 0.25,
+    "stationary_speed": 0.08
+  },
+  "flow": {
+    "grid": [48, 27],
+    "min_count": 8,
+    "dominance": 0.7
+  },
+  "classes": {
+    "accident":            {"enabled": true,  "min_len": 1.0,  "merge_gap": 2.0, "start_offset": 0.0, "end_offset": 0.0},
+    "near_miss":           {"enabled": false, "min_len": 0.8,  "merge_gap": 1.0, "start_offset": 0.0, "end_offset": 0.0},
+    "red_light":           {"enabled": true,  "min_len": 0.5,  "merge_gap": 0.5, "start_offset": 0.0, "end_offset": 0.0},
+    "wrong_way":           {"enabled": true,  "min_len": 1.5,  "merge_gap": 1.0, "start_offset": 0.0, "end_offset": 0.0},
+    "illegal_u_turn":      {"enabled": true,  "min_len": 1.0,  "merge_gap": 1.0, "start_offset": 0.0, "end_offset": 0.0},
+    "stopped_vehicle":     {"enabled": true,  "min_len": 10.0, "merge_gap": 2.0, "start_offset": 0.0, "end_offset": 0.0},
+    "jaywalking":          {"enabled": true,  "min_len": 1.0,  "merge_gap": 1.0, "start_offset": 0.0, "end_offset": 0.0},
+    "failure_to_yield":    {"enabled": true,  "min_len": 0.5,  "merge_gap": 0.5, "start_offset": 0.0, "end_offset": 0.0},
+    "illegal_turn":        {"enabled": true,  "min_len": 1.0,  "merge_gap": 1.0, "start_offset": 0.0, "end_offset": 0.0},
+    "solid_line_crossing": {"enabled": true,  "min_len": 0.5,  "merge_gap": 0.5, "start_offset": 0.0, "end_offset": 0.0},
+    "stop_line":           {"enabled": true,  "min_len": 2.0,  "merge_gap": 1.0, "start_offset": 0.0, "end_offset": 0.0},
+    "congestion":          {"enabled": true,  "min_len": 15.0, "merge_gap": 5.0, "start_offset": 0.0, "end_offset": 0.0},
+    "road_obstacle":       {"enabled": true,  "min_len": 3.0,  "merge_gap": 2.0, "start_offset": 0.0, "end_offset": 0.0},
+    "fire_smoke":          {"enabled": true,  "min_len": 3.0,  "merge_gap": 3.0, "start_offset": 0.0, "end_offset": 0.0}
+  },
+  "risk": {
+    "stride": 3,
+    "imgsz": 640
+  }
+}
