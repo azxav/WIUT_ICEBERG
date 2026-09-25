@@ -44,12 +44,17 @@ DEFAULTS: dict = {
     "decel_sec": 1.0,        # deceleration = speed drop over this window
     "moving_speed": 0.5,     # heights/s; decel only counts for objects that were moving
     "min_closing": 0.3,      # heights/s; pairs closing slower than this are ignored
-    "ttc0": 1.5,             # s, TTC at which the TTC term is neutral
-    "ttc_cap": 5.0,          # s, TTC beyond this (or inf) counts as this
-    "decel0": 1.0,           # heights/s^2 of "normal" braking
+    "ttc0": 0.8,             # s, TTC at which the TTC term is neutral
+    "ttc_cap": 1.5,          # s, TTC beyond this (or inf) counts as this: keeps "no conflict" from burying decel
+    "decel0": 2.5,           # heights/s^2 of "normal" braking (bus occlusions reach ~2.2 on samples)
     "closing_cap": 5.0,
-    "weights": [3.0, 0.5, 0.3],  # logistic weights for FEATURES (fit these on dev videos)
-    "bias": 0.0,
+    # Calibrated on the two sample clips (7.4 min of normal traffic, no accidents): zero
+    # alarms there (peak output 0.23). In image space dense traffic shows TTC ~0 with fast
+    # closing all the time, so the alarm is driven by the impact shock (a 4-5 heights/s
+    # stop alarms 0.2-0.5 s after contact; alarms inside an accident are ignored, not
+    # penalised) and the continuous score carries the AP term. Refit on labelled accidents.
+    "weights": [1.0, 3.0, 0.2],  # logistic weights for FEATURES
+    "bias": -3.0,
     "ema_sec": 0.3,          # smoothing time constant of the raw score
     "alarm_on": 0.6,         # smoothed score that starts an alarm (rising edge only)
     "alarm_off": 0.35,       # ... falls below this to end it and re-arm
@@ -77,6 +82,10 @@ def risk_features(centre: np.ndarray, half: np.ndarray, vel: np.ndarray, height:
         pair_h = (height[:, None] + height[None]) / 2
         close = pairwise_closing(centre, vel) / pair_h
         valid = (close >= c["min_closing"]) & (is_vehicle[:, None] | is_vehicle[None])
+        # footprints already overlapping are perspective / occlusion (or a crash already under
+        # way), not a predicted conflict: the camera looks down on dense traffic at a shallow angle
+        sep = np.abs(centre[:, None] - centre[None]) - (half[:, None] + half[None])
+        valid &= (sep > 0).any(axis=2)
         ttc = np.where(valid, ttc, np.inf)
         k = int(np.argmin(ttc))
         min_ttc = float(ttc.flat[k])
