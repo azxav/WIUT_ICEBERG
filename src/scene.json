@@ -295,10 +295,10 @@
   "signals": {
     "veh_main": {
       "roi": [
-        1124,
-        352,
-        1180,
-        426
+        1143,
+        365,
+        1172,
+        421
       ],
       "type": "vehicle_3lamp",
       "controls": "near",
@@ -306,10 +306,10 @@
     },
     "left_red_green": {
       "roi": [
-        249,
-        502,
-        291,
-        552
+        254,
+        508,
+        283,
+        549
       ],
       "type": "red_green_2lamp",
       "controls": "near (probable)",
