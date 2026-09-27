@@ -14,8 +14,8 @@ const TEAM_MEMBERS = [
   {
     name: 'Azizbek Xasanov',
     initials: 'AX',
-    role: 'Team lead · scene & labels',
-    responsibility: 'Coordinate scene-map and CVAT work, review event-label quality, and own release decisions.',
+    role: 'Scene & labels',
+    responsibility: 'Scene-map and CVAT review, event-label QA, and release documentation.',
     profiles: [
       ['LinkedIn', 'https://www.linkedin.com/in/azizbek-xasanov/'],
       ['GitHub', 'https://github.com/azxav'],
@@ -55,9 +55,9 @@ function SectionTitle({ title, description, number }) {
 
 function Topbar({ active }) {
   return <header className="topbar">
-    <a className="brand" href="#overview" aria-label="ICEBERG WIUT CV Lab overview">
+    <a className="brand" href="#overview" aria-label="ICEBERG traffic event detection overview">
       <span className="brand-mark">ICEBERG</span><span className="brand-divider" />
-      <span className="brand-name">WIUT CV Lab</span>
+      <span className="brand-name">Traffic Events</span>
     </a>
     <nav aria-label="Main navigation">
       {NAV.map(([name, id]) => <a className={active === id ? 'active' : ''} href={`#${id}`} key={id}>{name}</a>)}
@@ -206,7 +206,7 @@ function Overview({ data, selectedVideo, setSelectedVideo, onSeek }) {
 
 function TeamSection() {
   return <section id="team" className="text-section section-rule">
-    <SectionTitle number="01" title="Team" description="ICEBERG · WIUT Hackathon computer-vision track." />
+    <SectionTitle number="01" title="Team" description="ICEBERG · Traffic event detection project." />
     <div className="team-intro">
       <div><span className="team-kicker">ASSIGNED WORKSTREAMS</span><h3>Three owners, one submission.</h3></div>
       <p>Responsibilities are split across scene and annotation review, computer vision, and evaluation and delivery.</p>
@@ -422,6 +422,6 @@ export default function App() {
       <LinksSection />
       <DemoSection />
     </main>
-    <footer className="footer"><span>ICEBERG · WIUT Hackathon · CV Track</span><a href="#overview">Back to top ↑</a></footer>
+    <footer className="footer"><span>ICEBERG · Traffic Event Detection</span><a href="#overview">Back to top ↑</a></footer>
   </>;
 }

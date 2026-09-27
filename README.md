@@ -1,6 +1,6 @@
-# ICEBERG — WIUT CV Track: Traffic Event Detection
+# ICEBERG — Traffic Event Detection
 
-Offline fixed-camera traffic event detection and causal accident-risk baseline for the WIUT Hackathon 2026 CV track.
+Offline fixed-camera traffic event detection and causal accident-risk baseline.
 
 ## Run
 
@@ -68,7 +68,7 @@ Team **ICEBERG**
 
 | Member | Assigned responsibility | Profiles |
 |---|---|---|
-| Azizbek Xasanov | Team lead; scene-map and CVAT review, event-label QA, release coordination | [LinkedIn](https://www.linkedin.com/in/azizbek-xasanov/) · [GitHub](https://github.com/azxav) |
+| Azizbek Xasanov | Scene-map and CVAT review, event-label QA, release documentation | [LinkedIn](https://www.linkedin.com/in/azizbek-xasanov/) · [GitHub](https://github.com/azxav) |
 | Dilyorbek Muhammadjonov | Detection and tracking; Part A rules, runtime and reproducibility review | [LinkedIn](https://www.linkedin.com/in/dilyor/) · [GitHub](https://github.com/dilyorm) |
 | Davlat Mahmudov | Evaluation and risk review; website/demo and delivery | Profile links not supplied |
 
