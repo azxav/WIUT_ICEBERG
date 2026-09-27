@@ -10,6 +10,35 @@ const NAV = [
   ['Team', 'team'], ['Approach', 'approach'], ['EDA', 'eda'],
   ['Results', 'results'], ['Report', 'report'], ['Links', 'links'], ['Demo', 'demo'],
 ];
+const TEAM_MEMBERS = [
+  {
+    name: 'Azizbek Xasanov',
+    initials: 'AX',
+    role: 'Team lead · scene & labels',
+    responsibility: 'Coordinate scene-map and CVAT work, review event-label quality, and own release decisions.',
+    profiles: [
+      ['LinkedIn', 'https://www.linkedin.com/in/azizbek-xasanov/'],
+      ['GitHub', 'https://github.com/azxav'],
+    ],
+  },
+  {
+    name: 'Dilyorbek Muhammadjonov',
+    initials: 'DI',
+    role: 'Computer vision · detection',
+    responsibility: 'Own detection, tracking, and Part A event rules; review speed and reproducibility.',
+    profiles: [
+      ['LinkedIn', 'https://www.linkedin.com/in/dilyor/'],
+      ['GitHub', 'https://github.com/dilyorm'],
+    ],
+  },
+  {
+    name: 'Davlat Mahmudov',
+    initials: 'DM',
+    role: 'Evaluation · risk & delivery',
+    responsibility: 'Own metric review, Part B risk assessment, and website/demo preparation and delivery.',
+    profiles: [],
+  },
+];
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function timeLabel(seconds) {
@@ -26,9 +55,9 @@ function SectionTitle({ title, description, number }) {
 
 function Topbar({ active }) {
   return <header className="topbar">
-    <a className="brand" href="#overview" aria-label="WIUT Traffic Lab overview">
-      <span className="brand-mark">WIUT</span><span className="brand-divider" />
-      <span className="brand-name">Traffic Lab</span>
+    <a className="brand" href="#overview" aria-label="ICEBERG WIUT CV Lab overview">
+      <span className="brand-mark">ICEBERG</span><span className="brand-divider" />
+      <span className="brand-name">WIUT CV Lab</span>
     </a>
     <nav aria-label="Main navigation">
       {NAV.map(([name, id]) => <a className={active === id ? 'active' : ''} href={`#${id}`} key={id}>{name}</a>)}
@@ -177,8 +206,19 @@ function Overview({ data, selectedVideo, setSelectedVideo, onSeek }) {
 
 function TeamSection() {
   return <section id="team" className="text-section section-rule">
-    <SectionTitle number="01" title="Team" description="People and responsibilities for the WIUT Hackathon CV track." />
-    <div className="team-pending"><p>Team names, roles, and project links are waiting for owner-supplied details.</p><span>Not filled in with guessed information.</span></div>
+    <SectionTitle number="01" title="Team" description="ICEBERG · WIUT Hackathon computer-vision track." />
+    <div className="team-intro">
+      <div><span className="team-kicker">ASSIGNED WORKSTREAMS</span><h3>Three owners, one submission.</h3></div>
+      <p>Responsibilities are split across scene and annotation review, computer vision, and evaluation and delivery.</p>
+    </div>
+    <div className="team-grid">{TEAM_MEMBERS.map((member, index) => <article className="team-card" key={member.name}>
+      <div className="team-card-meta"><span>{String(index + 1).padStart(2, '0')} / ICEBERG</span><span className="team-initials">{member.initials}</span></div>
+      <p className="team-role">{member.role}</p>
+      <h3>{member.name}</h3>
+      <p className="team-responsibility">{member.responsibility}</p>
+      <div className="team-links">{member.profiles.length ? member.profiles.map(([label, url]) => <a href={url} key={label} target="_blank" rel="noreferrer" aria-label={`${member.name} on ${label}`}>{label}<span aria-hidden="true"> ↗</span></a>) : <span className="profile-note">Profile links not provided</span>}</div>
+    </article>)}</div>
+    <p className="team-note">Workstream ownership is assigned for this submission. Only profile links supplied by the team are shown.</p>
   </section>;
 }
 
@@ -353,7 +393,7 @@ function ReportSection({ data }) {
 function LinksSection() {
   return <section id="links" className="section-block section-rule links-section">
     <SectionTitle number="06" title="Project links" description="Code and reproducibility files for review." />
-    <div className="link-list"><a href="/predictions_samples.json" target="_blank" rel="noreferrer"><span>Sample predictions</span><b>Open JSON ↗</b></a><a href="/weights/yolo11s.pt" download><span>YOLO11s weights</span><b>Download ↗</b></a><a href="/README.md" target="_blank" rel="noreferrer"><span>Method and run instructions</span><b>Read README ↗</b></a><div><span>Public repository and final team links</span><b>Awaiting owner-supplied links</b></div></div>
+    <div className="link-list"><a href="/predictions_samples.json" target="_blank" rel="noreferrer"><span>Sample predictions</span><b>Open JSON ↗</b></a><a href="/weights/yolo11s.pt" download><span>YOLO11s weights</span><b>Download ↗</b></a><a href="/README.md" target="_blank" rel="noreferrer"><span>Method and run instructions</span><b>Read README ↗</b></a><a href="#team"><span>ICEBERG team profiles</span><b>View team ↗</b></a><div><span>Public project repository</span><b>Not created yet</b></div></div>
     <p className="license-note">Model and repository licensing: AGPL-3.0. Sample-video rights remain with their source owners.</p>
   </section>;
 }
@@ -382,6 +422,6 @@ export default function App() {
       <LinksSection />
       <DemoSection />
     </main>
-    <footer className="footer"><span>WIUT Hackathon · CV Track</span><a href="#overview">Back to top ↑</a></footer>
+    <footer className="footer"><span>ICEBERG · WIUT Hackathon · CV Track</span><a href="#overview">Back to top ↑</a></footer>
   </>;
 }

@@ -84,9 +84,24 @@ select { background: var(--surface-2); color: var(--text); border: 1px solid var
 .section-number { color: var(--cyan); font: 600 12px 'Segoe UI', system-ui, sans-serif; padding-top: 8px; }
 .section-title h2 { font-size: clamp(26px, 3vw, 38px); line-height: 1.1; margin: 0 0 8px; letter-spacing: -.045em; }
 .section-title p { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
-.team-pending { margin-left: 38px; padding: 20px 0 3px; border-top: 1px solid var(--line); display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
-.team-pending p { font-size: 16px; margin: 0; }
-.team-pending span, .small-note, .license-note { color: var(--quiet); font-size: 11px; }
+.team-intro { margin: 0 0 16px 38px; padding: 18px 0 2px; border-top: 1px solid var(--line); display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+.team-kicker { color: var(--cyan); font-size: 9px; letter-spacing: .12em; }
+.team-intro h3 { margin: 8px 0 0; font-size: clamp(19px, 2vw, 25px); letter-spacing: -.03em; }
+.team-intro > p { max-width: 430px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.team-grid { margin-left: 38px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.team-card { min-width: 0; min-height: 242px; padding: 18px; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); }
+.team-card-meta { display: flex; align-items: center; justify-content: space-between; color: var(--quiet); font-size: 9px; letter-spacing: .08em; }
+.team-initials { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--cyan); font-size: 10px; letter-spacing: 0; }
+.team-role { margin: 16px 0 0; color: var(--amber); font-size: 10px; line-height: 1.4; }
+.team-card h3 { margin: 7px 0 9px; font-size: 18px; letter-spacing: -.025em; }
+.team-responsibility { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.team-links { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; padding-top: 17px; }
+.team-links a { padding: 7px 9px; border: 1px solid var(--line); color: var(--cyan); font-size: 10px; }
+.team-links a:hover { border-color: var(--cyan); }
+.profile-note, .team-note, .small-note, .license-note { color: var(--quiet); font-size: 10px; }
+.profile-note { padding: 7px 0; }
+.team-note { margin: 13px 0 0 38px; line-height: 1.5; }
+.small-note, .license-note { font-size: 11px; }
 .approach-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 8vw; padding: 8px 0 28px; }
 .approach-copy h3 { font-size: 19px; margin: 0 0 12px; }
 .approach-copy p { color: var(--muted); font-size: 13px; line-height: 1.7; }
@@ -237,8 +252,12 @@ select { background: var(--surface-2); color: var(--text); border: 1px solid var
   .section-number { padding-top: 6px; }
   .section-title h2 { font-size: 28px; }
   .data-note, .report-grid, .runtime-table, .result-toolbar, .demo-workspace, .link-list, .license-note { margin-left: 0; }
-  .team-pending { margin-left: 0; display: block; }
-  .team-pending span { display: block; margin-top: 8px; }
+  .team-intro, .team-grid, .team-note { margin-left: 0; }
+  .team-intro { display: block; }
+  .team-intro > p { margin-top: 11px; }
+  .team-grid { grid-template-columns: 1fr; }
+  .team-card { min-height: 0; }
+  .team-responsibility { max-width: 42em; }
   .approach-grid { grid-template-columns: 1fr; gap: 24px; }
   .class-policy { gap: 8px; }
   .policy-divider { display: none; }

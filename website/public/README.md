@@ -1,4 +1,4 @@
-# WIUT CV Track — Traffic Event Detection
+# ICEBERG — WIUT CV Track: Traffic Event Detection
 
 Offline fixed-camera traffic event detection and causal accident-risk baseline for the WIUT Hackathon 2026 CV track.
 
@@ -8,7 +8,7 @@ Python 3.10+ is required. The supplied YOLO11s weights are in `weights/yolo11s.p
 
 ```powershell
 python -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
-python run_submission.py --videos samples --out predictions_samples.json --team <team-name>
+python run_submission.py --videos samples --out predictions_samples.json --team ICEBERG
 python evaluate.py --pred predictions_samples.json --gt my_labels.json --per-video
 python evaluate.py --pred predictions_samples.json --validate-only
 ```
@@ -60,8 +60,16 @@ The React/Vite site is in `website/`. Run it locally with `cd website`, `npm ci`
 
 The FastAPI demo is in `demo_api/`. Install `demo_api/requirements.txt`, set `DEMO_CORS_ORIGINS` to the site origin, then run `python -m uvicorn demo_api.app:app --host 127.0.0.1 --port 8000`. Uploads are limited to 2 minutes and 200 MB, resized to at most 1280×720, analyzed in a single-worker queue, and deleted after processing. Best results require a video matching the mapped junction view. The Docker Space definition is `demo_api/Dockerfile`.
 
-For Vercel, use `website/` as the project root. For the Hugging Face API, build from the repository root with `docker build -f demo_api/Dockerfile .`; set the API CORS origin before deployment. Account setup, team details, public repo creation, deploy approval, and public submission links remain owner tasks.
+For Vercel, use `website/` as the project root. For the Hugging Face API, build from the repository root with `docker build -f demo_api/Dockerfile .`; set the API CORS origin before deployment. Public repository creation and deploy approval remain owner tasks.
 
 ## Team and report
 
-Add the final team name, member names/roles, links, and work split before public submission. Team and hosting-account details are left blank rather than guessed.
+Team **ICEBERG**
+
+| Member | Assigned responsibility | Profiles |
+|---|---|---|
+| Azizbek Xasanov | Team lead; scene-map and CVAT review, event-label QA, release coordination | [LinkedIn](https://www.linkedin.com/in/azizbek-xasanov/) · [GitHub](https://github.com/azxav) |
+| Dilyorbek Muhammadjonov | Detection and tracking; Part A rules, runtime and reproducibility review | [LinkedIn](https://www.linkedin.com/in/dilyor/) · [GitHub](https://github.com/dilyorm) |
+| Davlat Mahmudov | Evaluation and risk review; website/demo and delivery | Profile links not supplied |
+
+These are assigned workstreams for this submission. Individual historical contributions, past projects, and Davlat's profile links were not supplied.
