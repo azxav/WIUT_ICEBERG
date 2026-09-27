@@ -1,106 +1,67 @@
-# WIUT Hackathon 2026 — Computer Vision track: starter kit
+# WIUT CV Track — Traffic Event Detection
 
-Traffic events from a fixed road camera: **detect** them as time segments
-(`[start_sec, end_sec, label]`) and, as a bonus, **anticipate** accidents with a
-causal risk score. Three files; read the task description for the rules.
+Offline fixed-camera traffic event detection and causal accident-risk baseline for the WIUT Hackathon 2026 CV track.
 
-```
-solution.py          <- the ONLY file you implement (CLASSES, detect_events, RiskEstimator)
-run_submission.py    <- organizers' harness: folder of videos -> predictions.json   (do not modify)
-evaluate.py          <- format check + the official metric                          (do not modify)
-examples/            <- ground_truth.json and predictions.json in the exact format
-requirements.txt     <- numpy + opencv for the harness; add your own deps to YOUR repo
-```
+## Run
 
-## Quickstart
+Python 3.10+ is required. The supplied YOLO11s weights are in `weights/yolo11s.pt`; no download step is needed.
 
-```bash
-pip install -r requirements.txt
-# 1. implement solution.py
-# 2. label the sample videos yourselves -> my_labels.json (same shape as examples/ground_truth.json)
-python run_submission.py --videos samples --out predictions_samples.json --team <your-team>
+```powershell
+python -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
+python run_submission.py --videos samples --out predictions_samples.json --team <team-name>
 python evaluate.py --pred predictions_samples.json --gt my_labels.json --per-video
-python evaluate.py --pred predictions_samples.json --validate-only        # format check without labels
+python evaluate.py --pred predictions_samples.json --validate-only
 ```
 
-## The interface (`solution.py`)
+The organizer harness and evaluator are unchanged. `detect_events()` accepts one video path; `RiskEstimator.step()` processes frames in order and reads no video files. Sample and hidden-test runtime budget is 3× video duration for both parts together.
 
-```python
-CLASSES = ["accident", "near_miss", "red_light", "wrong_way", "illegal_u_turn",
-           "stopped_vehicle", "jaywalking", "failure_to_yield", "illegal_turn",
-           "solid_line_crossing", "stop_line", "congestion", "road_obstacle", "fire_smoke"]
+## Method
 
-def detect_events(video_path: str) -> list[list]:
-    """Part A: [[start_sec, end_sec, label], ...]; label in CLASSES; same-class segments don't overlap."""
+1. Register the hand-labelled reference scene to each video's first frame.
+2. Run YOLO11s + ByteTrack every third frame at 960 px inference size; downscale 4K frames to 1920 px width, then restore source coordinates.
+3. Extract smoothed motion, lane, road, queue, crosswalk and stop-line features.
+4. Apply temporal rules for congestion, yielding conflicts and red-light running. Classify the mapped vehicle signal by lamp position and color.
+5. Merge short gaps and discard fragments below the event minimum.
+6. For Part B, sample a causal tracker every 10 frames and combine TTC, hard braking and red-signal movement into a decaying risk score.
 
-class RiskEstimator:
-    def reset(self, meta: dict) -> None: ...            # meta: video_id, fps, width, height, n_frames
-    def step(self, frame: np.ndarray, t_sec: float) -> float: ...   # BGR uint8 frame -> P(accident within 5 s)
-```
+**Current class gate (decision C11, minimum dev precision 0.7):** `congestion`, `failure_to_yield`, and `red_light` are emitted. `jaywalking` and `stop_line` remain in the official `CLASSES` list but are suppressed in the scored output. The current run emits no candidates for either, so their reported zero precision is not a candidate-rule precision estimate; the labels include 13 jaywalking and 2 stop-line events. Other official classes stay available in the interface and are disabled until a reviewed positive example supports a reliable rule.
 
-`step` is called for **every frame in order** by the harness; it must not open the
-video itself. Skipping frames internally and returning the last score is fine.
-You may remove ids from `CLASSES`; never add.
+## Sample validation
 
-## What we run (offline, one GPU, no internet)
+`my_labels.json` contains 118 reviewed intervals from four clips of the same fixed camera: 16 congestion, 83 failure-to-yield, 13 jaywalking, 4 red-light, and 2 stop-line labels. At tIoU 0.5, the emitted classes have development precision of 0.73, 0.85, and 1.00 respectively. The gated output has Score A 0.5084 across all five represented classes. This is a small rule-tuning set, not a held-out benchmark.
 
-```bash
-pip install -r requirements.txt            # or: docker build -t team .
-python run_submission.py --videos /data/test --out predictions.json
-python evaluate.py --pred predictions.json --gt ground_truth.json
-```
+The red-signal ablation uses the same detections and labels: changing from a red-priority vote to lamp-position plus dominance keeps all 4 red-light matches, removes 2 green-phase false alarms, and raises Score A from 0.4684 to 0.5084.
 
-Time budget per video: **3 × its duration** for Part A + Part B together; a video
-over budget or a crash scores as empty. Events with a bad label, bad times, or a
-same-class overlap are dropped by the harness and listed in its log. Weights
-≤ 5 GB, shipped in the repo or fetched once by `weights/download.sh` before the
-offline run.
+`predictions_samples.json` contains 100 events and passes the official format validator. It is the last completed sample output with two green-phase red-light false alarms removed according to the corrected lamp classifier. The last complete four-video harness pass used the earlier signal rule: 102 events, no format errors, and 625.3 s / 340.3 s (C3896), 539.2 s / 317.8 s (C3897), 555.1 s / 317.8 s (C3902), and 228.2 s / 127.6 s (C3905). That run passed the hard 3× budget at 1.70–1.84×, but missed the preferred 1.5× target. A later all-video repeat with the final seeded code exceeded budget on C3896 and was stopped; full-run timing for the exact current version remains unverified. Two 10-second clean-environment smoke runs produced identical events and risk arrays (29.3 s and 20.7 s on this laptop).
 
-## predictions.json
+There are no accident labels in the development set, so Part B is not scored or calibrated. Treat the risk curve as an experimental causal baseline.
 
-```json
-{
-  "team": "your-team-name",
-  "videos": {
-    "test_001.mp4": {
-      "events": [[12.4, 18.9, "accident"], [40.0, 43.5, "red_light"]],
-      "risk":   [[0.00, 0.01], [0.04, 0.01], [0.08, 0.02]]
-    },
-    "test_002.mp4": {"events": [], "risk": []}
-  }
-}
-```
+## Data, weights, and licences
 
-`risk` is written by the harness (one `[t_sec, score]` per frame). Keys are file
-names. Every test video must be present, even with `"events": []`.
-Ground truth: `{"test_001.mp4": {"duration": 600.0, "fps": 25.0, "events": [[12.0, 19.0, "accident"]]}}`.
+- `weights/yolo11s.pt`: pretrained Ultralytics YOLO11s COCO weights, approximately 19 MB. The model weights and Ultralytics code are under Ultralytics' AGPL-3.0 terms by default; this repository is licensed under AGPL-3.0. See the [Ultralytics licence](https://www.ultralytics.com/license).
+- Pretraining data: COCO 2017 only; no external traffic-event training set or task-specific fine-tuning was used. COCO annotations are CC BY 4.0; source-image copyright and terms remain with each image's original owner. See [COCO terms of use](https://cocodataset.org/#termsofuse).
+- No sample video is used for model training. `my_labels.json` is a manually reviewed development set for rule validation and tuning.
 
-## Metric (exact code in `evaluate.py`)
+## Reproducibility
 
-**Part A.** Per class `c` and per tIoU threshold τ ∈ {0.3, 0.5, 0.7}: greedy
-one-to-one matching by descending IoU; TP/FP/FN pooled over all videos; `F1_c(τ)`.
-`Score_A = mean_c mean_τ F1_c(τ)`. Classes = those in the ground truth or in your
-predictions (a class you predict that never occurs scores 0).
+The detector and tracker use fixed inference settings in `src/tracking.py`; Python, NumPy, and PyTorch RNGs are seeded to 0 before each video part. There is no model training or stochastic augmentation in this repository. The expected output can vary across Ultralytics, PyTorch, CUDA, or GPU versions. `requirements.txt` pins the runtime packages.
 
-**Part B** (`accident` only; H = 5 s, W = 10 s, θ = 0.5). Frames in `[s−H, s)`
-before an accident start `s` are positive; frames inside accidents and around
-near-misses are ignored; the rest negative. `AP` = average precision over frames,
-chance-normalised (`max(0, (AP_raw − r)/(1 − r))`, `r` = positive rate, so a
-constant score gets 0). Alarms = runs of score ≥ θ (runs < 2 s apart merged),
-alarm time = run start; an alarm in `[s−W, s)` of an unmatched accident matches it
-→ `F1_alarm`; `mTTA` = mean of `s − alarm_time` (0 if unmatched).
-`Score_B = 0.4·AP + 0.4·F1_alarm + 0.2·mTTA/W`.
+## Development files
 
-**Model score** `M = 0.7·Score_A + 0.3·Score_B` (M = Score_A if the test set has no
-accidents). Elimination score = 0.6·M + 0.25·Website + 0.15·Code.
+- `src/scene.json`: reviewed lanes, crossings, lights, queue zone, and road geometry.
+- `my_labels.json`: reviewed sample-video event intervals.
+- `labels/dev_labels_notes.md` and `labels/evidence/`: event rationales and start/middle/end image evidence.
+- `cache/`: local track caches and rule evaluation artifacts; not required to run submission.
+- `tests/`: unit tests for tracking, signal classification, rules, and event segmentation.
 
-## Tips
+## Website and upload demo
 
-- Label the sample videos yourselves with the conventions from the task
-  description and run `evaluate.py` against them. Without a dev set you are guessing.
-- Detector + tracker → trajectories; most classes are rules on trajectories plus
-  the scene layout. Learned models help most for `accident` / `near_miss`.
-- Post-process segments: merge fragments, drop sub-second blips, then check F1@0.7.
-- For Part B, time-to-collision from tracks is a strong simple signal; calibrate
-  so that 0.5 means "probably within 5 s". A flat 1.0 scores ≈ 0.
-- Print your runtime early; sampling every 2nd–5th frame is usually enough.
+The React/Vite site is in `website/`. Run it locally with `cd website`, `npm ci`, then `npm run dev`. The site uses reviewed labels, cached tracks, sample predictions, and the registered junction map to build its charts. To rebuild the annotated sample clips, install `tools/requirements_render.txt` and run `python tools/render_site_videos.py`. Then run `python tools/build_site_data.py --pred predictions_samples.json --metrics cache/site_eval.json --ablation-metrics cache/site_eval_before_signal_fix.json` to regenerate `website/public/site-data.json`, copy the report/prediction JSON, and place the model weights in the static download area.
+
+The FastAPI demo is in `demo_api/`. Install `demo_api/requirements.txt`, set `DEMO_CORS_ORIGINS` to the site origin, then run `python -m uvicorn demo_api.app:app --host 127.0.0.1 --port 8000`. Uploads are limited to 2 minutes and 200 MB, resized to at most 1280×720, analyzed in a single-worker queue, and deleted after processing. Best results require a video matching the mapped junction view. The Docker Space definition is `demo_api/Dockerfile`.
+
+For Vercel, use `website/` as the project root. For the Hugging Face API, build from the repository root with `docker build -f demo_api/Dockerfile .`; set the API CORS origin before deployment. Account setup, team details, public repo creation, deploy approval, and public submission links remain owner tasks.
+
+## Team and report
+
+Add the final team name, member names/roles, links, and work split before public submission. Team and hosting-account details are left blank rather than guessed.

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 
 import cv2
 import pandas as pd
@@ -105,6 +105,7 @@ def track_video(
     config: TrackConfig | None = None,
     model: Any | None = None,
     cache_path: str | Path | None = None,
+    frame_callback: Callable[[int, float, Any], None] | None = None,
 ) -> pd.DataFrame:
     """Track road users; optionally persist a Parquet cache.
 
@@ -129,6 +130,8 @@ def track_video(
     rows: list[dict[str, int | float]] = []
     try:
         for frame_index, frame in sampled_frames(capture, cfg.stride):
+            if frame_callback is not None:
+                frame_callback(frame_index, frame_index / fps, frame)
             source_width = frame.shape[1]
             target_width = min(source_width, cfg.max_frame_width)
             if target_width != source_width:

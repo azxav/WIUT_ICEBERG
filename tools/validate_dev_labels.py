@@ -4,7 +4,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-gt = json.loads(Path("labels/dev_labels.json").read_text())
+labels_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("my_labels.json")
+if not labels_path.exists():
+    labels_path = Path("labels/dev_labels.json")
+gt = json.loads(labels_path.read_text(encoding="utf-8"))
 allowed = {"accident", "near_miss", "red_light", "wrong_way", "illegal_u_turn",
            "stopped_vehicle", "jaywalking", "failure_to_yield", "illegal_turn",
            "solid_line_crossing", "stop_line", "congestion", "road_obstacle", "fire_smoke"}
@@ -26,4 +29,4 @@ dest.write_text(json.dumps(wrapper))
 subprocess.run([sys.executable, "evaluate.py", "--pred", str(dest), "--validate-only"], check=True)
 evidence = list(Path("labels/evidence").glob("*.jpg"))
 assert len(evidence) == total, (len(evidence), total)
-print(f"GT constraints: {len(gt)} videos, {total} events, {len(evidence)} evidence strips; no same-class overlap")
+print(f"{labels_path}: {len(gt)} videos, {total} events, {len(evidence)} evidence strips; no same-class overlap")

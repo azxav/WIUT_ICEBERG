@@ -1,9 +1,11 @@
-"""Apply the visually audited v2 geometry to the reference scene map."""
+"""Legacy pre-CVAT geometry builder; retained only for old scene maps."""
 import json
 from pathlib import Path
 
 path = Path("src/scene.json")
 scene = json.loads(path.read_text())
+if "turn_paths" in scene:
+    raise SystemExit("Refusing to overwrite CVAT-synced geometry with legacy coordinates.")
 scene["notes"] = ("Coordinates in C3905 1920x1080 reference. Crosswalks and curb/line "
                   "positions audited against all four registered backgrounds and 4K crops. "
                   "No lane arrows or turn-prohibition signs are legible; manoeuvre permissions remain unknown.")
@@ -44,8 +46,6 @@ scene["dashed_lines"] = {
 scene["curbs"] = {
     "near_left": {"polyline": [[67, 310], [181, 409], [282, 545], [337, 740], [180, 787]],
                   "comment": "Near-side curb and sidewalk edge."},
-    "near_median": {"polyline": [[120, 141], [330, 213], [697, 353], [1150, 510], [1193, 523]],
-                    "comment": "Raised central median edge."},
     "far_outer": {"polyline": [[95, 83], [420, 118], [900, 212], [1370, 322], [1815, 412], [1920, 433]],
                   "comment": "Far-side sidewalk curb, partly hidden by trees."},
     "island_B": {"polyline": [[1187, 515], [1305, 544], [1315, 566], [1193, 556]],
@@ -58,8 +58,6 @@ scene["curbs"] = {
 scene["no_stopping"] = {
     "near_crossing_A": {"polygon": [[285, 545], [934, 466], [1175, 530], [335, 630]],
                         "basis": "stop line plus zebra crossing", "comment": "Only red-light stop before the line is permitted."},
-    "branch_crossing_B": {"polygon": [[1195, 510], [1840, 460], [1853, 494], [1220, 547]],
-                          "basis": "zebra crossing"},
 }
 scene["lanes"] = {
     "near_curb": {"polygon": [[70, 310], [140, 250], [420, 505], [289, 545]],

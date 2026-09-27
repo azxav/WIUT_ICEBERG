@@ -17,6 +17,29 @@ def inside(poly, x, y):
     return cv2.pointPolygonTest(np.float32(poly), (float(x), float(y)), False) >= 0
 
 
+def signed_polyline_side(points, polyline):
+    """Signed distance to the nearest segment; positive is left of its direction."""
+    points = np.asarray(points, dtype=np.float32)
+    line = np.asarray(polyline, dtype=np.float32)
+    best_dist2 = np.full(len(points), np.inf, dtype=np.float32)
+    best_side = np.zeros(len(points), dtype=np.float32)
+    for a, b in zip(line[:-1], line[1:]):
+        delta = b - a
+        length2 = float(delta @ delta)
+        if length2 <= 0:
+            continue
+        rel = points - a
+        fraction = np.clip((rel @ delta) / length2, 0.0, 1.0)
+        nearest = a + fraction[:, None] * delta
+        offset = points - nearest
+        dist2 = np.einsum("ij,ij->i", offset, offset)
+        side = (delta[0] * offset[:, 1] - delta[1] * offset[:, 0]) / np.sqrt(length2)
+        closer = dist2 < best_dist2
+        best_dist2[closer] = dist2[closer]
+        best_side[closer] = side[closer]
+    return best_side, np.sqrt(best_dist2)
+
+
 def segments(t, flags, max_gap=.4, min_duration=.2):
     hits = np.asarray(t)[np.asarray(flags)]
     if not len(hits):
@@ -43,7 +66,6 @@ for name in sys.argv[1:] or ["C3905"]:
     crosswalks = {k: v["polygon"] for k, v in scene["crosswalks"].items()}
     roads = {k: v["polygon"] for k, v in scene["carriageways"].items()}
     line = scene["stop_lines"]["near"]["line"]
-    (ax, ay), (bx, by) = line
     for tid, g in df.groupby("id"):
         if len(g) < 3:
             continue
@@ -63,9 +85,10 @@ for name in sys.argv[1:] or ["C3905"]:
             for key, flag in in_cw.items():
                 for a, b in segments(t, flag, .5, .25):
                     rows.append(("crosswalk_vehicle", a, b, tid, cls, key))
-            side = (bx-ax)*(g.front_y.to_numpy()-ay) - (by-ay)*(g.front_x.to_numpy()-ax)
-            side /= np.hypot(bx-ax, by-ay)
-            valid = (g.front_x.to_numpy() >= min(ax,bx)-5) & (g.front_x.to_numpy() <= max(ax,bx)+10)
+            front = np.column_stack((g.front_x.to_numpy(), g.front_y.to_numpy()))
+            side, distance = signed_polyline_side(front, line)
+            valid = (distance <= 80) & (g.front_x.to_numpy() >= min(p[0] for p in line)-50) & \
+                    (g.front_x.to_numpy() <= max(p[0] for p in line)+50)
             crosses = np.where((side[1:] >= 0) & (side[:-1] < 0) & valid[1:])[0] + 1
             for i in crosses:
                 rows.append(("stop_crossing", round(float(t[i]), 2), round(float(t[i]), 2), tid, cls, "near"))

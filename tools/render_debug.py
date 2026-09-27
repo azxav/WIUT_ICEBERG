@@ -42,6 +42,8 @@ def draw_scene(frame: np.ndarray, scene: dict) -> np.ndarray:
         cv2.putText(frame, name, (int(x) + 2, int(y) - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (60, 250, 110), 1)
     for name, item in scene.get("lanes", {}).items():
         cv2.polylines(frame, [points(item["polygon"])], True, (210, 80, 245), 1, cv2.LINE_AA)
+    for name, item in scene.get("turn_paths", {}).items():
+        cv2.polylines(frame, [points(item["polyline"])], False, (255, 80, 220), 2, cv2.LINE_AA)
     for item in scene.get("stop_lines", {}).values():
         cv2.polylines(frame, [points(item["line"])], False, (20, 20, 250), 2, cv2.LINE_AA)
     for name, item in scene.get("signals", {}).items():

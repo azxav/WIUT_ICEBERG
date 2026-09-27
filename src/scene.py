@@ -55,7 +55,7 @@ def load_scene(background_bgr=None):
     if H is None:
         return None, n
     for key in ("carriageways", "median", "stop_lines", "crosswalks", "signals", "zones",
-                "solid_lines", "dashed_lines", "curbs", "no_stopping", "lanes"):
+                "solid_lines", "dashed_lines", "curbs", "no_stopping", "lanes", "turn_paths"):
         if key in scene:
             scene[key] = _warp(scene[key], H)
     scene["H"] = H.tolist()

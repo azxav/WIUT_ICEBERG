@@ -58,6 +58,35 @@ class TrafficLightTests(unittest.TestCase):
         self.assertEqual(traffic_lights.classify_counts({"R": 3, "Y": 0, "G": 0}), "?")
         self.assertEqual(traffic_lights.classify_counts({"R": 12, "Y": 10, "G": 0}), "?")
 
+    def test_vehicle_signal_uses_lamp_position_to_separate_amber_from_red(self):
+        amber = np.zeros((90, 30, 3), dtype=np.uint8)
+        amber[34:57, 5:25] = (0, 200, 255)
+        state, counts = traffic_lights.classify_vehicle_signal(amber)
+        self.assertEqual(state, "Y")
+        self.assertGreater(counts["Y"], 0)
+
+        red = np.zeros_like(amber)
+        red[5:27, 5:25] = (0, 0, 255)
+        self.assertEqual(traffic_lights.classify_vehicle_signal(red)[0], "R")
+
+        green = np.zeros_like(amber)
+        green[64:86, 5:25] = (0, 255, 0)
+        self.assertEqual(traffic_lights.classify_vehicle_signal(green)[0], "G")
+
+    def test_vehicle_signal_rejects_red_reflection_when_green_lamp_is_stronger(self):
+        mixed = np.zeros((90, 30, 3), dtype=np.uint8)
+        mixed[4:9, 4:10] = (0, 0, 255)  # 30 red pixels in the top lamp slice
+        mixed[67:73, 4:14] = (0, 255, 0)  # 60 green pixels in the bottom slice
+        state, counts = traffic_lights.classify_vehicle_signal(mixed)
+        self.assertEqual(state, "G")
+        self.assertGreater(counts["G"], counts["R"])
+
+    def test_vehicle_signal_returns_unknown_when_two_lamp_slices_compete(self):
+        mixed = np.zeros((90, 30, 3), dtype=np.uint8)
+        mixed[4:14, 4:14] = (0, 0, 255)
+        mixed[64:74, 4:14] = (0, 255, 0)
+        self.assertEqual(traffic_lights.classify_vehicle_signal(mixed)[0], "?")
+
     def test_signal_cache_samples_every_stride_in_video_time(self):
         red = np.zeros((4, 8, 3), dtype=np.uint8)
         red[:, :] = (0, 0, 255)

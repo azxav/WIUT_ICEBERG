@@ -4,65 +4,49 @@
     1920,
     1080
   ],
-  "notes": "Coordinates in C3905 1920x1080 reference. Crosswalks and curb/line positions audited against all four registered backgrounds and 4K crops. No lane arrows or turn-prohibition signs are legible; manoeuvre permissions remain unknown.",
+  "notes": "Coordinates in the C3905 scene_ref.jpg (1920x1080), synced from CVAT task 2623023. The near approach has a curbside right-turn lane plus four through lanes, ordered curb to median. The right-turn path is directed from approach to the lower-left branch. The left two-lamp head is a pedestrian signal; other turn restrictions remain unknown.",
   "carriageways": {
     "near": {
       "polygon": [
         [
-          60,
-          320
+          95.24,
+          144.33
         ],
         [
-          330,
-          200
+          511.48,
+          292.37
         ],
         [
-          1180,
-          520
+          1086.01,
+          526.87
         ],
         [
-          1920,
-          560
+          1915.57,
+          865.43
         ],
         [
-          1920,
-          1080
+          1910.8,
+          1075.3
         ],
         [
-          880,
-          1080
+          1288.27,
+          1077.95
         ],
         [
-          820,
-          1005
+          877.89,
+          820.0
         ],
         [
-          775,
-          955
+          634.59,
+          671.97
         ],
         [
-          720,
-          920
+          405.95,
+          534.2
         ],
         [
-          650,
-          890
-        ],
-        [
-          530,
-          835
-        ],
-        [
-          415,
-          785
-        ],
-        [
-          337,
-          740
-        ],
-        [
-          285,
-          548
+          23.42,
+          299.69
         ]
       ],
       "direction": [
@@ -74,36 +58,44 @@
     "far": {
       "polygon": [
         [
-          100,
-          100
+          89.4,
+          125.3
         ],
         [
-          300,
-          90
+          211.0,
+          85.7
         ],
         [
-          900,
-          215
+          644.85,
+          200.03
         ],
         [
-          1370,
-          335
+          989.3,
+          285.0
         ],
         [
-          1830,
-          425
+          1361.56,
+          374.44
         ],
         [
-          1920,
-          440
+          1648.82,
+          446.26
         ],
         [
-          1920,
-          540
+          1920.0,
+          505.71
         ],
         [
-          1180,
-          515
+          1920.0,
+          680.35
+        ],
+        [
+          1918.5,
+          770.17
+        ],
+        [
+          1220.9,
+          521.0
         ]
       ],
       "direction": [
@@ -116,12 +108,12 @@
   "median": {
     "polyline": [
       [
-        120,
-        140
+        1159.3,
+        516.61
       ],
       [
-        1195,
-        520
+        83.51,
+        129.68
       ]
     ],
     "comment": "raised median, no crossing"
@@ -130,12 +122,28 @@
     "near": {
       "line": [
         [
-          289,
-          545
+          238.9,
+          556.2
         ],
         [
-          934,
-          466
+          425.0,
+          532.7
+        ],
+        [
+          559.8,
+          517.7
+        ],
+        [
+          685.9,
+          499.0
+        ],
+        [
+          813.4,
+          481.4
+        ],
+        [
+          942.4,
+          465.3
         ]
       ],
       "signal": "veh_main",
@@ -146,148 +154,73 @@
     "A_near": {
       "polygon": [
         [
-          335,
-          630
+          320.95,
+          628.0
         ],
         [
-          600,
-          593
+          1096.27,
+          521.01
         ],
         [
-          800,
-          565
+          1179.82,
+          559.11
         ],
         [
-          925,
-          545
-        ],
-        [
-          1065,
-          528
-        ],
-        [
-          1110,
-          525
-        ],
-        [
-          1165,
-          540
-        ],
-        [
-          1170,
-          562
-        ],
-        [
-          1065,
-          568
-        ],
-        [
-          950,
-          585
-        ],
-        [
-          800,
-          610
-        ],
-        [
-          600,
-          642
-        ],
-        [
-          460,
-          664
-        ],
-        [
-          385,
-          675
+          338.53,
+          686.63
         ]
       ]
     },
     "B_far": {
       "polygon": [
         [
-          1200,
-          515
+          1197.4,
+          510.75
         ],
         [
-          1840,
-          462
+          1739.7,
+          463.8
         ],
         [
-          1850,
-          490
+          1848.2,
+          490.2
         ],
         [
-          1225,
-          545
+          1298.5,
+          547.4
         ]
-      ]
+      ],
+      "comment": "Crossing over the right-hand branch road; the B_far key is historical, not the far carriageway."
     },
     "C_lower": {
       "polygon": [
         [
-          337,
-          740
+          316.76,
+          709.51
         ],
         [
-          415,
-          785
+          333.85,
+          735.8
         ],
         [
-          530,
-          835
+          747.82,
+          921.1
         ],
         [
-          650,
-          890
+          902.9,
+          1078.15
         ],
         [
-          720,
-          920
+          613.12,
+          1076.83
         ],
         [
-          775,
-          955
+          498.1,
+          954.6
         ],
         [
-          820,
-          1005
-        ],
-        [
-          880,
-          1080
-        ],
-        [
-          610,
-          1080
-        ],
-        [
-          565,
-          1010
-        ],
-        [
-          530,
-          967
-        ],
-        [
-          450,
-          922
-        ],
-        [
-          320,
-          857
-        ],
-        [
-          207,
-          802
-        ],
-        [
-          180,
-          787
-        ],
-        [
-          295,
-          740
+          167.6,
+          786.39
         ]
       ]
     }
@@ -295,10 +228,10 @@
   "signals": {
     "veh_main": {
       "roi": [
-        1143,
-        365,
-        1172,
-        421
+        1150.2,
+        357.27,
+        1176.53,
+        429.94
       ],
       "type": "vehicle_3lamp",
       "controls": "near",
@@ -306,21 +239,21 @@
     },
     "left_red_green": {
       "roi": [
-        254,
-        508,
-        283,
-        549
+        246.68,
+        496.21,
+        297.98,
+        551.79
       ],
-      "type": "red_green_2lamp",
-      "controls": "near (probable)",
-      "comment": "Left-edge head turns red during median-head amber; use median red for vehicle red-light labels."
+      "type": "pedestrian_2lamp",
+      "controls": "A_near pedestrian crossing",
+      "comment": "Pedestrian standing/walking icons. Its red phase begins before vehicle red; never use this head for red_light or stop_line."
     },
     "gantry_left_back": {
       "roi": [
-        368,
-        280,
-        399,
-        330
+        391.5,
+        281.7,
+        425.0,
+        346.0
       ],
       "type": "signal_back",
       "controls": null,
@@ -328,10 +261,10 @@
     },
     "gantry_right_back": {
       "roi": [
-        716,
-        253,
-        750,
-        311
+        717.94,
+        254.54,
+        750.91,
+        322.38
       ],
       "type": "signal_back",
       "controls": null,
@@ -342,24 +275,28 @@
     "queue_near": {
       "polygon": [
         [
-          60,
-          320
+          950.7,
+          462.8
         ],
         [
-          330,
-          200
+          239.28,
+          555.12
         ],
         [
-          940,
-          445
+          29.16,
+          375.15
         ],
         [
-          940,
-          465
+          65.91,
+          213.08
         ],
         [
-          285,
-          548
+          85.69,
+          140.53
+        ],
+        [
+          529.49,
+          300.71
         ]
       ],
       "comment": "approach before near stop line: congestion / queue"
@@ -367,36 +304,48 @@
     "junction": {
       "polygon": [
         [
-          285,
-          545
+          316.28,
+          622.38
         ],
         [
-          934,
-          466
+          1087.8,
+          512.2
         ],
         [
-          1188,
-          517
+          1200.3,
+          503.7
         ],
         [
-          1920,
-          440
+          1713.3,
+          456.8
         ],
         [
-          1920,
-          1080
+          1920.0,
+          504.62
         ],
         [
-          610,
-          1080
+          1920.0,
+          853.76
         ],
         [
-          180,
-          787
+          1917.33,
+          1079.63
         ],
         [
-          335,
-          630
+          593.07,
+          1078.27
+        ],
+        [
+          473.67,
+          969.72
+        ],
+        [
+          175.17,
+          796.05
+        ],
+        [
+          340.7,
+          694.29
         ]
       ],
       "comment": "Full visible conflict area from near stop line through side-road and crossing B/C."
@@ -404,43 +353,39 @@
     "bus_stop_far": {
       "polygon": [
         [
-          578,
-          134
+          1365.1,
+          363.22
         ],
         [
-          935,
-          202
+          1343.39,
+          336.09
         ],
         [
-          925,
-          228
+          1210.4,
+          284.5
         ],
         [
-          578,
-          160
+          598.5,
+          147.49
+        ],
+        [
+          457.4,
+          140.7
         ]
       ],
-      "comment": "bus stop on far carriageway: bus dwell is not stopped_vehicle"
+      "comment": "Far-side bus berth; berth dwell is not a stopped_vehicle event."
     }
   },
   "solid_lines": {
     "near_curb_lane_end": {
       "polyline": [
         [
-          100,
-          292
+          407.2,
+          528.8
         ],
         [
-          171,
-          355
-        ],
-        [
-          276,
-          440
-        ],
-        [
-          430,
-          506
+          73.4,
+          323.9
         ]
       ],
       "comment": "Near-side lane boundary becomes continuous on stop-line approach; partly occluded."
@@ -448,20 +393,16 @@
     "near_median_edge": {
       "polyline": [
         [
-          120,
-          149
+          1073.39,
+          515.19
         ],
         [
-          401,
-          248
+          682.62,
+          356.44
         ],
         [
-          780,
-          392
-        ],
-        [
-          1178,
-          514
+          93.76,
+          150.2
         ]
       ],
       "comment": "Yellow edge line along raised median; no vehicle crossing."
@@ -471,172 +412,197 @@
     "near_lane_1": {
       "polyline": [
         [
-          120,
-          235
+          546.9,
+          513.4
         ],
         [
-          260,
-          297
+          362.6,
+          419.0
         ],
         [
-          420,
-          372
-        ],
-        [
-          650,
-          474
+          88.1,
+          274.6
         ]
       ],
-      "comment": "Approximate centreline of dashed near-side lane marking; last metres occluded by vehicles."
+      "comment": "Near carriageway dashed divider 1."
     },
     "near_lane_2": {
       "polyline": [
         [
-          160,
-          185
+          680.82,
+          496.04
         ],
         [
-          335,
-          255
+          326.2,
+          333.1
         ],
         [
-          580,
-          352
-        ],
-        [
-          834,
-          459
+          58.9,
+          210.3
         ]
       ],
-      "comment": "Dashed boundary of median-side near lane."
+      "comment": "Near carriageway dashed divider 2."
     },
     "far_lane_1": {
       "polyline": [
         [
-          120,
-          105
+          1589.7,
+          485.7
         ],
         [
-          380,
-          162
+          982.5,
+          314.6
         ],
         [
-          770,
-          269
+          672.9,
+          231.8
         ],
         [
-          1190,
-          374
+          424.6,
+          160.9
         ],
         [
-          1600,
-          463
+          173.1,
+          90.2
         ]
       ],
-      "comment": "Far-carriageway dashed lane divider, approximate through heavy occlusion."
+      "comment": "Far carriageway dashed divider 1."
     },
     "far_lane_2": {
       "polyline": [
         [
-          105,
-          135
+          1442.5,
+          490.5
         ],
         [
-          380,
-          213
+          859.1,
+          309.0
         ],
         [
-          710,
-          307
+          576.6,
+          227.0
         ],
         [
-          1070,
-          400
+          319.52,
+          153.03
         ],
         [
-          1430,
-          479
+          137.3,
+          98.9
         ]
       ],
-      "comment": "Second far-carriageway dashed divider, approximate."
+      "comment": "Far carriageway dashed divider 2."
+    },
+    "near_lane_3": {
+      "polyline": [
+        [
+          810.9,
+          482.7
+        ],
+        [
+          563.24,
+          379.09
+        ],
+        [
+          59.3,
+          171.7
+        ]
+      ],
+      "comment": "Near carriageway dashed divider 3."
+    },
+    "far_lane_3": {
+      "polyline": [
+        [
+          1345.8,
+          503.9
+        ],
+        [
+          823.7,
+          334.1
+        ],
+        [
+          528.6,
+          240.6
+        ],
+        [
+          253.8,
+          155.77
+        ],
+        [
+          95.73,
+          106.46
+        ]
+      ],
+      "comment": "Far carriageway dashed divider 3."
     }
   },
   "curbs": {
     "near_left": {
       "polyline": [
         [
-          67,
-          310
+          54.2,
+          412.94
         ],
         [
-          181,
-          409
+          182.55,
+          515.26
         ],
         [
-          282,
-          545
+          317.18,
+          614.89
         ],
         [
-          337,
-          740
+          346.8,
+          692.07
         ],
         [
-          180,
-          787
+          248.07,
+          755.8
+        ],
+        [
+          125.74,
+          829.21
+        ],
+        [
+          2.33,
+          886.21
         ]
       ],
       "comment": "Near-side curb and sidewalk edge."
     },
-    "near_median": {
-      "polyline": [
-        [
-          120,
-          141
-        ],
-        [
-          330,
-          213
-        ],
-        [
-          697,
-          353
-        ],
-        [
-          1150,
-          510
-        ],
-        [
-          1193,
-          523
-        ]
-      ],
-      "comment": "Raised central median edge."
-    },
     "far_outer": {
       "polyline": [
         [
-          95,
-          83
+          1801.2,
+          466.9
         ],
         [
-          420,
-          118
+          1377.3,
+          363.8
         ],
         [
-          900,
-          212
+          1366.9,
+          336.8
         ],
         [
-          1370,
-          322
+          1211.07,
+          276.2
         ],
         [
-          1815,
-          412
+          604.14,
+          143.47
         ],
         [
-          1920,
-          433
+          396.7,
+          121.6
+        ],
+        [
+          323.2,
+          106.1
+        ],
+        [
+          212.4,
+          77.8
         ]
       ],
       "comment": "Far-side sidewalk curb, partly hidden by trees."
@@ -644,20 +610,28 @@
     "island_B": {
       "polyline": [
         [
-          1187,
-          515
+          1176.3,
+          550.7
         ],
         [
-          1305,
-          544
+          1271.6,
+          537.8
         ],
         [
-          1315,
-          566
+          1318.0,
+          553.2
         ],
         [
-          1193,
-          556
+          1319.3,
+          572.6
+        ],
+        [
+          1251.02,
+          581.59
+        ],
+        [
+          1175.0,
+          554.5
         ]
       ],
       "comment": "Keep-right island between crossings A and B."
@@ -665,20 +639,36 @@
     "island_C_inner": {
       "polyline": [
         [
-          495,
-          787
+          611.6,
+          684.6
         ],
         [
-          621,
-          686
+          577.53,
+          730.35
         ],
         [
-          761,
-          765
+          501.8,
+          781.9
         ],
         [
-          505,
-          797
+          499.33,
+          795.24
+        ],
+        [
+          589.18,
+          785.26
+        ],
+        [
+          770.5,
+          754.5
+        ],
+        [
+          652.4,
+          677.94
+        ],
+        [
+          609.14,
+          683.77
         ]
       ],
       "comment": "First pedestrian refuge island by lower crossing."
@@ -686,24 +676,40 @@
     "island_C_outer": {
       "polyline": [
         [
-          679,
-          886
+          692.34,
+          853.48
         ],
         [
-          746,
-          828
+          720.62,
+          843.49
         ],
         [
-          900,
-          855
+          873.7,
+          818.5
         ],
         [
-          915,
-          889
+          970.2,
+          878.44
         ],
         [
-          701,
-          920
+          970.2,
+          894.2
+        ],
+        [
+          944.41,
+          900.06
+        ],
+        [
+          732.3,
+          922.5
+        ],
+        [
+          677.3,
+          882.6
+        ],
+        [
+          692.3,
+          851.8
         ]
       ],
       "comment": "Second pedestrian refuge island by lower crossing."
@@ -713,123 +719,202 @@
     "near_crossing_A": {
       "polygon": [
         [
-          285,
-          545
+          237.6,
+          564.3
         ],
         [
-          934,
-          466
+          948.15,
+          464.97
         ],
         [
-          1175,
-          530
+          1183.9,
+          561.2
         ],
         [
-          335,
-          630
+          422.5,
+          707.7
         ]
       ],
       "basis": "stop line plus zebra crossing",
       "comment": "Only red-light stop before the line is permitted."
-    },
-    "branch_crossing_B": {
-      "polygon": [
-        [
-          1195,
-          510
-        ],
-        [
-          1840,
-          460
-        ],
-        [
-          1853,
-          494
-        ],
-        [
-          1220,
-          547
-        ]
-      ],
-      "basis": "zebra crossing"
     }
   },
   "lanes": {
     "near_curb": {
       "polygon": [
         [
-          70,
-          310
+          416.6,
+          537.2
         ],
         [
-          140,
-          250
+          243.8,
+          558.5
         ],
         [
-          420,
-          505
+          150.34,
+          496.93
         ],
         [
-          289,
-          545
-        ]
-      ],
-      "direction": [
-        0.88,
-        0.47
-      ],
-      "allowed_manoeuvres": "unknown",
-      "comment": "No legible turn arrow or restriction sign in samples."
-    },
-    "near_middle": {
-      "polygon": [
-        [
-          140,
-          250
+          30.87,
+          382.62
         ],
         [
-          185,
-          195
-        ],
-        [
-          705,
-          475
-        ],
-        [
-          420,
-          505
-        ]
-      ],
-      "direction": [
-        0.9,
-        0.43
-      ],
-      "allowed_manoeuvres": "unknown"
-    },
-    "near_median": {
-      "polygon": [
-        [
-          185,
-          195
-        ],
-        [
-          320,
-          205
-        ],
-        [
-          1180,
-          515
-        ],
-        [
-          705,
-          475
+          67.4,
+          330.62
         ]
       ],
       "direction": [
         0.92,
         0.39
       ],
-      "allowed_manoeuvres": "unknown"
+      "allowed_manoeuvres": "right_turn",
+      "comment": "Curbside turn-only lane; right turn from the driver’s direction."
+    },
+    "near_through_1": {
+      "polygon": [
+        [
+          422.22,
+          534.25
+        ],
+        [
+          556.47,
+          516.35
+        ],
+        [
+          183.05,
+          325.41
+        ],
+        [
+          125.4,
+          295.1
+        ],
+        [
+          70.18,
+          325.41
+        ]
+      ],
+      "direction": [
+        0.92,
+        0.39
+      ],
+      "allowed_manoeuvres": "through",
+      "comment": "Near-approach through lane 1, ordered curb to median."
+    },
+    "near_through_2": {
+      "polygon": [
+        [
+          558.46,
+          515.4
+        ],
+        [
+          681.28,
+          498.45
+        ],
+        [
+          81.6,
+          221.5
+        ],
+        [
+          95.05,
+          275.69
+        ]
+      ],
+      "direction": [
+        0.92,
+        0.39
+      ],
+      "allowed_manoeuvres": "through",
+      "comment": "Near-approach through lane 2, ordered curb to median."
+    },
+    "near_through_3": {
+      "polygon": [
+        [
+          680.28,
+          493.52
+        ],
+        [
+          804.59,
+          479.55
+        ],
+        [
+          57.3,
+          172.8
+        ],
+        [
+          58.7,
+          208.1
+        ]
+      ],
+      "direction": [
+        0.92,
+        0.39
+      ],
+      "allowed_manoeuvres": "through",
+      "comment": "Near-approach through lane 3, ordered curb to median."
+    },
+    "near_through_4": {
+      "polygon": [
+        [
+          60.1,
+          169.8
+        ],
+        [
+          79.9,
+          141.9
+        ],
+        [
+          512.2,
+          296.03
+        ],
+        [
+          938.9,
+          463.1
+        ],
+        [
+          808.8,
+          478.6
+        ],
+        [
+          245.55,
+          246.29
+        ]
+      ],
+      "direction": [
+        0.92,
+        0.39
+      ],
+      "allowed_manoeuvres": "through",
+      "comment": "Near-approach through lane 4, ordered curb to median."
+    }
+  },
+  "turn_paths": {
+    "near_right": {
+      "polyline": [
+        [
+          83.82,
+          376.22
+        ],
+        [
+          403.09,
+          595.64
+        ],
+        [
+          496.1,
+          678.5
+        ],
+        [
+          304.1,
+          795.1
+        ],
+        [
+          12.9,
+          947.9
+        ]
+      ],
+      "from_lane": "near_curb",
+      "to": "lower_left_branch",
+      "allowed_manoeuvre": "right_turn",
+      "comment": "Directed from the near approach into the lower-left branch; a right turn from the driver’s direction."
     }
   }
 }

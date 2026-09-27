@@ -46,6 +46,8 @@ def render(image, scene):
         cv2.polylines(image, [points(item["polygon"])], True, (160, 80, 255), 1)
         x, y = np.int32(item["polygon"][0])
         cv2.putText(image, "lane:" + name, (int(x), int(y) - 5), 0, .4, (160, 80, 255), 1)
+    for name, item in scene.get("turn_paths", {}).items():
+        line(item["polyline"], (255, 80, 220), "turn:" + name, 3)
     for key, color in (("stop_lines", (0, 0, 255)), ("solid_lines", (0, 165, 255)),
                        ("dashed_lines", (255, 255, 255)), ("curbs", (255, 255, 0))):
         for name, item in scene.get(key, {}).items():
@@ -80,7 +82,7 @@ def main():
         if H is None:
             raise RuntimeError(f"scene registration failed: {background}, {count} inliers")
         for key in ("carriageways", "median", "stop_lines", "crosswalks", "signals", "zones",
-                    "solid_lines", "dashed_lines", "curbs", "no_stopping", "lanes"):
+                    "solid_lines", "dashed_lines", "curbs", "no_stopping", "lanes", "turn_paths"):
             if key in scene:
                 scene[key] = _warp(scene[key], H)
     output.parent.mkdir(parents=True, exist_ok=True)
