@@ -2,6 +2,8 @@
 
 Offline fixed-camera traffic event detection and causal accident-risk baseline.
 
+Public source repository: https://github.com/azxav/WIUT_ICEBERG
+
 ## Run
 
 Python 3.10+ is required. The supplied YOLO11s weights are in `weights/yolo11s.pt`; no download step is needed.

@@ -393,7 +393,7 @@ function ReportSection({ data }) {
 function LinksSection() {
   return <section id="links" className="section-block section-rule links-section">
     <SectionTitle number="06" title="Project links" description="Code and reproducibility files for review." />
-    <div className="link-list"><a href="/predictions_samples.json" target="_blank" rel="noreferrer"><span>Sample predictions</span><b>Open JSON ↗</b></a><a href="/weights/yolo11s.pt" download><span>YOLO11s weights</span><b>Download ↗</b></a><a href="/README.md" target="_blank" rel="noreferrer"><span>Method and run instructions</span><b>Read README ↗</b></a><a href="#team"><span>ICEBERG team profiles</span><b>View team ↗</b></a><a href="/DEPLOY_VM.md" target="_blank" rel="noreferrer"><span>Cloud VM deployment guide</span><b>Open guide ↗</b></a></div>
+    <div className="link-list"><a href="https://github.com/azxav/WIUT_ICEBERG" target="_blank" rel="noreferrer"><span>Source repository</span><b>Open GitHub ↗</b></a><a href="/predictions_samples.json" target="_blank" rel="noreferrer"><span>Sample predictions</span><b>Open JSON ↗</b></a><a href="/weights/yolo11s.pt" download><span>YOLO11s weights</span><b>Download ↗</b></a><a href="/README.md" target="_blank" rel="noreferrer"><span>Method and run instructions</span><b>Read README ↗</b></a><a href="#team"><span>ICEBERG team profiles</span><b>View team ↗</b></a><a href="/DEPLOY_VM.md" target="_blank" rel="noreferrer"><span>Cloud VM deployment guide</span><b>Open guide ↗</b></a></div>
     <p className="license-note">Model and repository licensing: AGPL-3.0. Sample-video rights remain with their source owners.</p>
   </section>;
 }
