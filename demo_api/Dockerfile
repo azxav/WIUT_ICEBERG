@@ -14,5 +14,5 @@ COPY src /app/src
 COPY weights /app/weights
 COPY demo_api /app/demo_api
 
-EXPOSE 7860
-CMD ["python", "-m", "uvicorn", "demo_api.app:app", "--host", "0.0.0.0", "--port", "7860"]
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "demo_api.app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+.env*
+__pycache__
+*.py[cod]
+*.mp4
+*.MP4
+samples/
+cache/
+eda/
+labels/
+tests/
+tools/
+website/node_modules/
+website/dist/

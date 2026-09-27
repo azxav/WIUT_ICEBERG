@@ -39,7 +39,7 @@ const TEAM_MEMBERS = [
     profiles: [],
   },
 ];
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_PATH = '/api';
 
 function timeLabel(seconds) {
   const s = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -325,9 +325,9 @@ function DemoSection() {
     if (!file || !duration) return;
     setStatus('uploading'); setMessage('Uploading video…'); setError(''); setResult(null); setUploadProgress(0);
     const form = new FormData(); form.append('file', file);
-    const xhr = new XMLHttpRequest(); xhr.open('POST', `${API_BASE}/api/jobs`);
+    const xhr = new XMLHttpRequest(); xhr.open('POST', `${API_PATH}/jobs`);
     xhr.upload.onprogress = (event) => { if (event.lengthComputable) setUploadProgress(Math.round(event.loaded / event.total * 100)); };
-    xhr.onerror = () => { setStatus('failed'); setError(`Cannot reach the demo API at ${API_BASE}.`); };
+    xhr.onerror = () => { setStatus('failed'); setError('Cannot reach the demo API through this site.'); };
     xhr.onload = () => {
       if (xhr.status < 200 || xhr.status >= 300) { setStatus('failed'); setError(xhr.responseText || `Upload failed (${xhr.status}).`); return; }
       let job;
@@ -341,7 +341,7 @@ function DemoSection() {
     setStatus('analyzing'); setMessage('Video uploaded. Analysis is running.');
     try {
       while (true) {
-        const response = await fetch(`${API_BASE}/api/jobs/${encodeURIComponent(jobId)}`);
+        const response = await fetch(`${API_PATH}/jobs/${encodeURIComponent(jobId)}`);
         if (!response.ok) throw new Error(`Status request failed (${response.status}).`);
         const job = await response.json(); setMessage(job.message || 'Analysis is running.');
         if (job.status === 'completed') { setResult(job.result); setStatus('completed'); setMessage('Results are ready.'); return; }
@@ -393,7 +393,7 @@ function ReportSection({ data }) {
 function LinksSection() {
   return <section id="links" className="section-block section-rule links-section">
     <SectionTitle number="06" title="Project links" description="Code and reproducibility files for review." />
-    <div className="link-list"><a href="/predictions_samples.json" target="_blank" rel="noreferrer"><span>Sample predictions</span><b>Open JSON ↗</b></a><a href="/weights/yolo11s.pt" download><span>YOLO11s weights</span><b>Download ↗</b></a><a href="/README.md" target="_blank" rel="noreferrer"><span>Method and run instructions</span><b>Read README ↗</b></a><a href="#team"><span>ICEBERG team profiles</span><b>View team ↗</b></a><div><span>Public project repository</span><b>Not created yet</b></div></div>
+    <div className="link-list"><a href="/predictions_samples.json" target="_blank" rel="noreferrer"><span>Sample predictions</span><b>Open JSON ↗</b></a><a href="/weights/yolo11s.pt" download><span>YOLO11s weights</span><b>Download ↗</b></a><a href="/README.md" target="_blank" rel="noreferrer"><span>Method and run instructions</span><b>Read README ↗</b></a><a href="#team"><span>ICEBERG team profiles</span><b>View team ↗</b></a><a href="/DEPLOY_VM.md" target="_blank" rel="noreferrer"><span>Cloud VM deployment guide</span><b>Open guide ↗</b></a></div>
     <p className="license-note">Model and repository licensing: AGPL-3.0. Sample-video rights remain with their source owners.</p>
   </section>;
 }

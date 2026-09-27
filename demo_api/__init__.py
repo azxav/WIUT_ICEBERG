@@ -1,1 +1,1 @@
-"""Local and Hugging Face demo API."""
+"""Local and self-hosted demo API."""
