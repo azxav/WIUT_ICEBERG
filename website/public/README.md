@@ -60,7 +60,7 @@ The detector and tracker use fixed inference settings in `src/tracking.py`; Pyth
 
 The React/Vite site is in `website/`. For local development, start the API from the repository root with `python -m uvicorn demo_api.app:app --host 127.0.0.1 --port 8000`, then run `cd website`, `npm ci`, and `npm run dev`; Vite proxies `/api` to the local API. The site uses reviewed labels, cached tracks, sample predictions, and the registered junction map to build its charts. To rebuild the annotated sample clips, install `tools/requirements_render.txt` and run `python tools/render_site_videos.py`. Then run `python tools/build_site_data.py --pred predictions_samples.json --metrics cache/site_eval.json --ablation-metrics cache/site_eval_before_signal_fix.json` to regenerate `website/public/site-data.json`, copy the report/prediction JSON, and place the model weights in the static download area.
 
-Deploy the complete site and upload API together on one cloud VM with Docker Compose. Caddy provides HTTPS; the web container serves the built site and proxies API requests internally. Only ports 80 and 443 are published. Uploads are limited to 2 minutes and 200 MB, resized to at most 1280×720, analyzed in a single-worker queue, and deleted after processing. See [DEPLOY_VM.md](DEPLOY_VM.md). No Vercel, GitHub deployment integration, or Hugging Face service is required; transfer the source directly to the VM. VM/domain provisioning and deploy approval remain owner tasks.
+Uploads are limited to 2 minutes and 200 MB, resized to at most 1280×720, analyzed in a single-worker queue, and deleted after processing.
 
 ## Team and report
 
