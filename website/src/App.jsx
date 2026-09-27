@@ -36,7 +36,10 @@ const TEAM_MEMBERS = [
     initials: 'DM',
     role: 'Evaluation · risk & delivery',
     responsibility: 'Own metric review, Part B risk assessment, and website/demo preparation and delivery.',
-    profiles: [],
+    profiles: [
+      ['LinkedIn', 'https://www.linkedin.com/in/davlatbek-makhmudov'],
+      ['GitHub', 'https://github.com/likealiens'],
+    ],
   },
 ];
 const API_PATH = '/api';

@@ -70,6 +70,6 @@ Team **ICEBERG**
 |---|---|---|
 | Azizbek Xasanov | Scene-map and CVAT review, event-label QA, release documentation | [LinkedIn](https://www.linkedin.com/in/azizbek-xasanov/) · [GitHub](https://github.com/azxav) |
 | Dilyorbek Muhammadjonov | Detection and tracking; Part A rules, runtime and reproducibility review | [LinkedIn](https://www.linkedin.com/in/dilyor/) · [GitHub](https://github.com/dilyorm) |
-| Davlat Mahmudov | Evaluation and risk review; website/demo and delivery | Profile links not supplied |
+| Davlat Mahmudov | Evaluation and risk review; website/demo and delivery | [LinkedIn](https://www.linkedin.com/in/davlatbek-makhmudov) · [GitHub](https://github.com/likealiens) |
 
-These are assigned workstreams for this submission. Individual historical contributions, past projects, and Davlat's profile links were not supplied.
+These are assigned workstreams for this submission. Individual historical contributions and past projects were not supplied.
